@@ -1,1 +1,1 @@
-"# Crowd Jigsaw Puzzle" 
+# Crowd Jigsaw Puzzle

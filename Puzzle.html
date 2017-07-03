@@ -1,0 +1,26 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>HTML5 Puzzle</title>
+    <meta property="og:title" content="Html5 Jigsaw Puzzle">
+    <meta property="og:image" content="http://dl.dropbox.com/u/5728198/html5puzzle/images/puzzle.jpg">
+    <meta property="og:description" content="An online jigsaw puzzle by Marcelo Ricardo de Oliveira using the stunning features of the Paper JS framework">
+    <link href="styles/puzzle.css" rel="stylesheet" type="text/css" />
+    <script src="scripts/jquery-1.7.2.min.js" type="text/javascript"></script>
+    <script src="scripts/paper.js" type="text/javascript"></script>
+    <script type="text/paperscript" canvas="canvas" src="scripts/jigsaw.js">
+            
+    </script>
+</head>
+<body>
+    <img width="920" height="120" src="images/logo.png" class="logo"/>
+    <canvas id="canvas" class="canvas" resize></canvas>
+    <div class="charms">
+        <img width="50" height="50" src="images/zoomIn.png" class="zoomIn"/>
+        <img width="50" height="50" src="images/zoomOut.png" class="zoomOut"/>
+        <img width="50" height="50" src="images/help.png" class="help"/>
+    </div>
+    <img width="512" height="512" id="puzzle-image" class="puzzle-image" style="display: none;" src="images/corgi.jpg" />
+    <img width="128" height="128" id="empty" style="display: none;" src="images/empty.png" />
+</body>
+</html>
