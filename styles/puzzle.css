@@ -5,14 +5,13 @@
     margin: 0;
 }
 
-.logo
-{
-    overflow: hidden;   
-    position: absolute;
-    left: 50%;
-    margin: 0 0 0 -516px;
-    display: none;
+h3 {
+  background: url('../images/logo.png') no-repeat;
+  background-size: 40px;
+  padding-left: 50px;
+  color: white;
 }
+
 
 canvas
 {
@@ -30,11 +29,12 @@ canvas
 
 .zoomIn,
 .zoomOut,
-.help
+.help,
+.restart
 {
     z-index: 100;
     position: absolute;
-    opacity: 0.5;
+    opacity: 1;
     cursor: pointer;
 }
 
@@ -43,7 +43,7 @@ canvas
     overflow: hidden;   
     position: absolute;
     background: #ccc;
-    opacity: 0.7;
+    opacity: 0.75;
     right: 0%;
     height: 100%;
     width: 96px;    
@@ -51,7 +51,8 @@ canvas
 
 .zoomIn:hover,
 .zoomOut:hover,
-.help:hover
+.help:hover,
+.restart.hover
 {
     opacity: 1.0;
 }
@@ -77,3 +78,9 @@ canvas
     margin: 50px 25px 0 0;
 }
 
+.restart
+{
+    right: 0%;
+    top: 50%;
+    margin: 150px 25px 0 0;
+}

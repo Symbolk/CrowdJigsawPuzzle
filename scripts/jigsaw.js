@@ -49,6 +49,11 @@ $('.help').mousedown(function () {
     }
 });
 
+$('.restart').click(function(){
+    // document.execCommand('Refresh');
+    window.location.reload();
+});
+
 var charmsWidth = $('.charms').css('width').replace('px', '');
 $('.puzzle-image').css('margin', '-' + imgHeight / 2 + 'px 0 0 -' + imgWidth / 2 + 'px');
 

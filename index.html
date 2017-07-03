@@ -19,7 +19,7 @@ limitations under the License.
 <head>
     <meta charset=utf-8 />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email/Password Authentication Example</title>
+    <title>欢迎来到Crowd Jigsaw Puzzle！</title>
     <!-- Material Design Theming -->
     <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.orange-indigo.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
@@ -62,17 +62,17 @@ limitations under the License.
                 var errorMessage = error.message;
                 // [START_EXCLUDE]
                 if (errorCode === 'auth/wrong-password') {
-                    alert('Wrong password.');
+                    alert('密码错误！');
                 } else {
                     alert(errorMessage);
                 }
                 console.log(error);
-                document.getElementById('quickstart-sign-in').disabled = false;
+                document.getElementById('sign-in').disabled = false;
                 // [END_EXCLUDE]
             });
             // [END authwithemail]
         }
-        document.getElementById('quickstart-sign-in').disabled = true;
+        document.getElementById('sign-in').disabled = true;
     }
 
     /**
@@ -121,6 +121,10 @@ limitations under the License.
         // [END sendemailverification]
     }
 
+    function startGame(){
+        window.location.href = "puzzle.html";
+    }
+
     function sendPasswordReset() {
         var email = document.getElementById('reset_email').value;
         // [START sendpasswordemail]
@@ -155,7 +159,7 @@ limitations under the License.
         // [START authstatelistener]
         firebase.auth().onAuthStateChanged(function(user) {
             // [START_EXCLUDE silent]
-            document.getElementById('quickstart-verify-email').disabled = true;
+            document.getElementById('verify-email').disabled = true;
             // [END_EXCLUDE]
             if (user) {
                 // User is signed in.
@@ -167,32 +171,36 @@ limitations under the License.
                 var uid = user.uid;
                 var providerData = user.providerData;
                 // [START_EXCLUDE]
-                document.getElementById('quickstart-sign-in-status').textContent = '已登录';
-                document.getElementById('quickstart-sign-in').textContent = '登出';
-                document.getElementById('quickstart-account-details').textContent = JSON.stringify(user, null, '  ');
+                document.getElementById('sign-in-status').textContent = '已登录';
+                document.getElementById('sign-in').textContent = '登出';
+                document.getElementById('start_game').disabled = false;                                
+                document.getElementById('account-details').textContent = JSON.stringify(user, null, '  ');
                 if (!emailVerified) {
-                    // document.getElementById('quickstart-verify-email').disabled = true;
-                    // document.getElementById('quickstart-signup').disabled = true;
+                    document.getElementById('verify-email').disabled = true;
+                    // document.getElementById('signup').disabled = true;
                 }
                 // [END_EXCLUDE]
             } else {
                 // User is signed out.
                 // [START_EXCLUDE]
-                document.getElementById('quickstart-sign-in-status').textContent = '已登出';
-                document.getElementById('quickstart-sign-in').textContent = '登录';
-                document.getElementById('quickstart-account-details').textContent = 'null';
+                document.getElementById('sign-in-status').textContent = '已登出';
+                document.getElementById('sign-in').textContent = '登录';
+                document.getElementById('account-details').textContent = 'null';
+                document.getElementById('start_game').disabled = true;                
                 // [END_EXCLUDE]
             }
             // [START_EXCLUDE silent]
-            document.getElementById('quickstart-sign-in').disabled = false;
+            document.getElementById('sign-in').disabled = false;
             // [END_EXCLUDE]
         });
         // [END authstatelistener]
 
-        document.getElementById('quickstart-sign-in').addEventListener('click', toggleSignIn, false);
-        document.getElementById('quickstart-sign-up').addEventListener('click', handleSignUp, false);
-        document.getElementById('quickstart-verify-email').addEventListener('click', sendEmailVerification, false);
-        document.getElementById('quickstart-password-reset').addEventListener('click', sendPasswordReset, false);
+        document.getElementById('sign-in').addEventListener('click', toggleSignIn, false);
+        document.getElementById('sign-up').addEventListener('click', handleSignUp, false);
+        document.getElementById('verify-email').addEventListener('click', sendEmailVerification, false);
+        document.getElementById('password-reset').addEventListener('click', sendPasswordReset, false);
+        document.getElementById('start_game').addEventListener('click', startGame, false);
+        
     }
 
     window.onload = function() {
@@ -207,7 +215,8 @@ limitations under the License.
         <header class="mdl-layout__header mdl-color-text--white mdl-color--light-blue-700">
             <div class="mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet mdl-grid">
                 <div class="mdl-layout__header-row mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet mdl-cell--8-col-desktop">
-                    <a href="/"><h3>登录Jigsaw</h3></a>
+                    <!--<a href="/"></a>-->
+                    <h3>登录Crowd Jigsaw Puzzle</h3>
                 </div>
             </div>
         </header>
@@ -224,14 +233,16 @@ limitations under the License.
                         <input class="mdl-textfield__input" style="display:inline;width:auto;" type="password" id="password" name="password" placeholder="Password" />
                         <br/>
                         <br/>
-                        <button class="mdl-button mdl-js-button mdl-button--raised" disabled id="quickstart-sign-in" name="signin">登录</button>
+                        <button class="mdl-button mdl-js-button mdl-button--raised" disabled id="sign-in" name="signin">登录</button>
+                        &nbsp;&nbsp;&nbsp;
+                        <button class="mdl-button mdl-js-button mdl-button--raised" disabled id="start_game" name="start-game">开始游戏</button>                        
                         <br/>
                         <br/>
                         <p>忘记密码？可通过邮箱重置</p>
                         <input class="mdl-textfield__input" style="display:inline;width:auto;" type="text" id="reset_email" name="reset_email" placeholder="Email" />
                         <br/>
                         <br/>
-                        <button class="mdl-button mdl-js-button mdl-button--raised" id="quickstart-password-reset" name="reset-password">重置密码</button>
+                        <button class="mdl-button mdl-js-button mdl-button--raised" id="password-reset" name="reset-password">重置密码</button>
                         <br/>
                         <br/>
                         <p>没有账户？请输入邮箱地址和密码进行注册</p>
@@ -239,14 +250,14 @@ limitations under the License.
                         <input class="mdl-textfield__input" style="display:inline;width:auto;" type="password" id="signup_password" name="signup_password" placeholder="Password" />
                         <br/>
                         <br/>
-                        <button class="mdl-button mdl-js-button mdl-button--raised" disabled id="quickstart-verify-email" name="verify-email">验证邮箱</button>
+                        <button class="mdl-button mdl-js-button mdl-button--raised" id="sign-up" name="signup">注册</button>
                         &nbsp;&nbsp;&nbsp;
-                        <button class="mdl-button mdl-js-button mdl-button--raised" id="quickstart-sign-up" name="signup">注册</button>
+                        <button class="mdl-button mdl-js-button mdl-button--raised" disabled id="verify-email" name="verify-email">验证邮箱</button>
                         <!-- Container where we'll display the user details -->
-                        <div class="quickstart-user-details-container">
-                            状态: <span id="quickstart-sign-in-status">未知</span>
+                        <div class="user-details-container">
+                            状态: <span id="sign-in-status">未知</span>
                             <div>当前 <code>currentUser</code> object value:</div>
-                            <pre><code id="quickstart-account-details">null</code></pre>
+                            <pre><code id="account-details">null</code></pre>
                         </div>
                     </div>
                 </div>
