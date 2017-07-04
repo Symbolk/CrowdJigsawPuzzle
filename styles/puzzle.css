@@ -30,7 +30,8 @@ canvas
 .zoomIn,
 .zoomOut,
 .help,
-.restart
+.restart,
+.settings
 {
     z-index: 100;
     position: absolute;
@@ -52,7 +53,8 @@ canvas
 .zoomIn:hover,
 .zoomOut:hover,
 .help:hover,
-.restart.hover
+.restart.hover,
+.settings.hover
 {
     opacity: 1.0;
 }
@@ -61,26 +63,33 @@ canvas
 {
     right: 0%;
     top: 50%;
-    margin: -150px 25px 0 0;
+    margin: -175px 25px 0 0;
 }
 
 .zoomIn
 {
     right: 0%;
     top: 50%;
-    margin: -50px 25px 0 0;
+    margin: -75px 25px 0 0;
 }
 
 .zoomOut
 {
     right: 0%;
     top: 50%;
-    margin: 50px 25px 0 0;
+    margin: 25px 25px 0 0;
 }
 
 .restart
 {
     right: 0%;
     top: 50%;
-    margin: 150px 25px 0 0;
+    margin: 125px 25px 0 0;
+}
+
+.settings
+{
+    right: 0%;
+    top: 50%;
+    margin: 225px 25px 0 0;
 }
