@@ -93,3 +93,16 @@ canvas
     top: 50%;
     margin: 225px 25px 0 0;
 }
+
+.info{
+	position: absolute;
+	left: 20px;
+	bottom: 20px;
+}
+
+
+.mdl-switch{
+    display:inline;
+    margin-left: 10px;
+    margin-right: 10px;    
+}

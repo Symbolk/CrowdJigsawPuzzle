@@ -1,3 +1,4 @@
+
 Array.prototype.remove = function (start, end) {
     this.splice(start, end);
     return this;
@@ -49,7 +50,7 @@ $('.help').mousedown(function () {
     }
 });
 
-$('.restart').click(function(){
+$('.restart').click(function () {
     // document.execCommand('Refresh');
     window.location.reload();
 });
@@ -119,7 +120,8 @@ function Html5Puzzle(config) {
     this.tilesPerColumn = config.tilesPerColumn;
     this.tileNum = this.tilesPerRow * this.tilesPerColumn;
 
-    console.log(this.tileNum + " : "+this.tilesPerRow + "*" + this.tilesPerColumn);
+    // output some info about this puzzle
+    console.log(this.tileNum + " : " + this.tilesPerRow + "*" + this.tilesPerColumn);
 
     this.tileMarginWidth = this.tileWidth * 0.203125;
 
@@ -128,6 +130,9 @@ function Html5Puzzle(config) {
     this.selectionGroup = undefined;
     this.shadowScale = 1.5;
     this.tiles = createTiles(this.tilesPerRow, this.tilesPerColumn);
+
+    // keep track of the steps of the current user
+    this.steps = 0;
 
     function createTiles(xTileCount, yTileCount) {
         var tiles = new Array();
@@ -460,6 +465,10 @@ function Html5Puzzle(config) {
                 instance.selectedTile = instance.selectionGroup = null;
                 project.activeLayer.addChild(tile);
 
+                // every pick and release is counted as one step
+                instance.steps += 1;
+                var steps = document.getElementById("steps");
+                steps.innerText = instance.steps;
 
                 // check num of errors every release
                 var errors = checkTiles();
@@ -469,6 +478,7 @@ function Html5Puzzle(config) {
             }
         }
     }
+
 
     function getTileAtCellPosition(point) {
         //var width = instance.tilesPerRow;
@@ -558,3 +568,4 @@ function Html5Puzzle(config) {
         return errors;
     }
 }
+
