@@ -29,7 +29,7 @@ _Powered By [@Symbolk](http://www.symbolk.com)_
 
 ## Play it online!
 
-1, Visit https://www.crowdjigsawpuzzle.firebaseapp.com (Only For Test, Better Run Locally)
+1, Visit https://crowdjigsawpuzzle.firebaseapp.com (Only For Test, Better Run Locally)
 
 
 2, Register an account with Email address and passwword; If you want to manage your account, you must verify your email.
