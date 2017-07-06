@@ -34,7 +34,7 @@ _Powered By [@Symbolk](http://www.symbolk.com)_
 
 2, Register an account with Email address and passwword; If you want to manage your account, you must verify your email.
 
-![SignIn](https://github.com/Symbolk/CrowdJigsawPuzzle/blob/master/screenshots/sigin.jpg)
+![SignIn](https://github.com/Symbolk/CrowdJigsawPuzzle/blob/master/screenshots/signin.jpg)
 
 3, Click "Start Game" to play with a puzzle.
 
