@@ -34,11 +34,11 @@ _Powered By [@Symbolk](http://www.symbolk.com)_
 
 2, Register an account with Email address and passwword; If you want to manage your account, you must verify your email.
 
-![SignUp](http://i1.buimg.com/1949/c2309123c2f7e736.jpg)
+![SignIn](https://github.com/Symbolk/CrowdJigsawPuzzle/blob/master/screenshots/sigin.jpg)
 
 3, Click "Start Game" to play with a puzzle.
 
-![Puzzle](http://i1.buimg.com/1949/9e6348d9a3f13c23.jpg)
+![Puzzle](https://github.com/Symbolk/CrowdJigsawPuzzle/blob/master/screenshots/puzzle.jpg)
 
 
 ## Run it locally!
@@ -56,11 +56,11 @@ firebase login
 ```
 3, Create a web app in your Firebase console, and enable Email/Password login:
 
-![Enable](http://i1.buimg.com/1949/4164a23901795423.png) 
+![Enable](https://github.com/Symbolk/CrowdJigsawPuzzle/blob/master/screenshots/enable.png) 
 
 4, Config your app : switch to Console/Overview, copy the code inside <script></script> to scripts/config.js(remember to rename config_template.js):
 
-![Config](http://i1.buimg.com/1949/9086a71399011aa7.png)
+![Config](https://github.com/Symbolk/CrowdJigsawPuzzle/blob/master/screenshots/config.png)
 
 5, Link the app to Firebase:
 ```sh

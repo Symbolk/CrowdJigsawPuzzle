@@ -1,4 +1,31 @@
 
+// auto hide and show some elements
+$('.charms').mouseleave(function () {
+    $('.charms').animate({
+        // width : "hide",  
+        // paddingLeft : "hide",  
+        // paddingRight : "hide",  
+        // marginLeft : "hide",  
+        // marginRight : "hide"  
+        opacity: 0
+    });
+});
+$('.charms').mouseover(function () {
+    $('.charms').animate({
+        // width : "show",  
+        // paddingLeft : "show",  
+        // paddingRight : "show",  
+        // marginLeft : "show",  
+        // marginRight : "show" 
+        opacity: 0.75
+    });
+});
+
+// $('.header').mouseleave(function(){
+//     $('.header').slideUp('slow');
+// });
+
+
 Array.prototype.remove = function (start, end) {
     this.splice(start, end);
     return this;
@@ -74,6 +101,7 @@ function onMouseDown(event) {
     // }
 
 }
+
 
 function onMouseUp(event) {
     puzzle.releaseTile();

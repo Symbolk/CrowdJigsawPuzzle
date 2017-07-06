@@ -9,9 +9,9 @@ h3 {
   background: url('../images/logo.png') no-repeat;
   background-size: 40px;
   padding-left: 50px;
-  color: white;
+  color: Teal;
+  /*border:1px dashed #000;*/
 }
-
 
 canvas
 {
@@ -31,7 +31,8 @@ canvas
 .zoomOut,
 .help,
 .restart,
-.settings
+.settings,
+.user
 {
     z-index: 100;
     position: absolute;
@@ -43,20 +44,29 @@ canvas
 {
     overflow: hidden;   
     position: absolute;
-    background: #ccc;
-    opacity: 0.75;
+    background: #f0f3f9;
+    top: 10%;
+    /*opacity: 0.75;*/
     right: 0%;
-    height: 100%;
-    width: 96px;    
+    height: 625px;
+    width: 96px;  
+    /*display: none;  */
 }
-
+.help:hover,
+.user.hover,
 .zoomIn:hover,
 .zoomOut:hover,
-.help:hover,
 .restart.hover,
 .settings.hover
 {
     opacity: 1.0;
+}
+
+.user
+{
+    right: 0%;
+    top: 50%;
+    margin: -275px 25px 0 0;
 }
 
 .help
@@ -98,11 +108,14 @@ canvas
 	position: absolute;
 	left: 20px;
 	bottom: 20px;
+    /*border:1px dashed #000;*/
+    display: inline;
+    background-color:#f0f3f9;
 }
 
 
 .mdl-switch{
     display:inline;
     margin-left: 10px;
-    margin-right: 10px;    
+    margin-right: 10px;   
 }
