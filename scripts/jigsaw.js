@@ -21,10 +21,32 @@ $('.charms').mouseover(function () {
     });
 });
 
-// $('.header').mouseleave(function(){
-//     $('.header').slideUp('slow');
+// $('.header').hover(
+//     function () {
+//         $('.header').animate({ opacity: 0.75 });
+//     },
+//     function () {
+//         $('.header').animate({ opacity: 0 });
+//     });
+// $('.header').mouseleave(function (){
+//     $('.header').animate({  
+//         //         width : "hide",  
+//         // paddingLeft : "hide",  
+//         // paddingRight : "hide",  
+//         // marginLeft : "hide",  
+//         // marginRight : "hide"  
+//     });
 // });
 
+// $('.header').mouseover(function () {
+//     $('.header').animate({
+//         //         width : "show",  
+//         // paddingLeft : "show",  
+//         // paddingRight : "show",  
+//         // marginLeft : "show",  
+//         // marginRight : "show" 
+//     });
+// });
 
 Array.prototype.remove = function (start, end) {
     this.splice(start, end);
@@ -57,6 +79,7 @@ puzzle.zoom(-.3);
 var path;
 var movePath = false;
 
+// add functions to the charms(e.g. toolbox)
 $('.zoomIn').click(function () {
     puzzle.zoom(.1);
 });
@@ -471,7 +494,7 @@ function Html5Puzzle(config) {
             // current no tile&&4 sides no conficts, a successful release
             // isolated || fitted
             if (!hasConflict) {
-
+                // if the released tile has tiles around but no conflict
                 if (aroundTiles.length > 0) {
                     // fitted release
                     for (var i = 0; i < aroundTiles.length; i++) {

@@ -86,11 +86,12 @@ firebase serve
     * scripts
         * config.js
         * jigsaw.js
+        * main.js
+        * dialog-polyfill.js
         * jquery-1.7.2.min.js
         * paper.js
     * styles
         * main.css
         * puzzle.css
     * index.html
-    * puzzle.html
         
