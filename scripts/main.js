@@ -1,25 +1,25 @@
 'use strict';
 
-var splashPage = document.querySelector('#page-splash');
-var signInEmail = document.querySelector('#sign-in-email');
-var signUpEmail = document.querySelector('#sign-up-email');
-var signInGoogle = document.querySelector('#sign-in-google');
-var psResetButton = document.querySelector('#reset-password');
+const splashPage = document.querySelector('#page-splash');
+const signInEmail = document.querySelector('#sign-in-email');
+const signUpEmail = document.querySelector('#sign-up-email');
+const signInGoogle = document.querySelector('#sign-in-google');
+const psResetButton = document.querySelector('#reset-password');
+const userPic = document.querySelector('#user-pic');
+const userName = document.querySelector('#user-name');
 
 
-var userPic = document.querySelector('#user-pic');
-var userName = document.querySelector('#user-name');
 var listeningFirebaseRefs = [];
 var currentUID;
-
+var currentUName;
 /**
  * click the user charm and show the user profile
  */
 (function () {
-    var showButton = document.querySelector('#show-user');
-    var dialog = document.querySelector('#user-profile');
-    var closeButton = document.querySelector('#close-button');
-    var signOutButton = document.querySelector('#sign-out-button');
+    let showButton = document.querySelector('#show-user');
+    let dialog = document.querySelector('#user-profile');
+    let closeButton = document.querySelector('#close-button');
+    let signOutButton = document.querySelector('#sign-out-button');
 
     if (!dialog.showModal) {
         dialogPolyfill.registerDialog(dialog);
@@ -66,6 +66,44 @@ function writeUserData(userId, name, email, imageUrl) {
 }
 
 /**
+ * Initialize the database which keeps all the links
+ * For every tile/node, create one record
+ * RUN ONLY ONCE
+ */
+function initDatabase(tilesNum){
+    for(let i = 0;i < tilesNum;i++){
+        firebase.database().ref('links/' + i).set({
+            self : i
+        });
+    }
+}
+
+/**
+ *  Every release and combine update one link in the database
+ *  When one link is created by one user: 
+ *  1, If the link does not exist, update the tile list of the selected tile and the combined tile;
+ *  2, If the link already exists, push(append) the user to the supporter list(child) of the selected tile;
+ *  When one link is broken by one user:
+ *  1, Remove the user from the supporter list of the 2 tiles;
+ *  2, If the user is the last one supporter, remove the link
+ * @param {*} sourceTileIndex the selected tile index
+ * @param {*} targetTileIndex the around combined tile index
+ */
+function updateLink(sourceTileIndex, targetTileIndex){
+    // Update the link bidirectionally
+    let sourceRef=firebase.database().ref('links/' + sourceTileIndex + '/' + targetTileIndex);
+    let targetRef=firebase.database().ref('links/' + targetTileIndex + '/' + sourceTileIndex);
+    
+    sourceRef.push({
+        supporter : currentUName
+    });
+    
+    targetRef.push({
+        supporter : currentUName
+    });
+}
+
+/**
  * Track the user state change
  * @param {*} user 
  */
@@ -77,10 +115,12 @@ function onAuthStateChanged(user) {
     if (user) {
         // user is signed in
         currentUID = user.uid;
+        currentUName = user.displayName || user.email ;
         splashPage.style.display = 'none';
         writeUserData(user.uid, user.displayName, user.email, user.photoURL);
         userName.textContent = user.displayName || user.email;
-        userPic.style.backgroundImage = 'url(' + (user.photoURL || '../images/profile_placeholder.png') + ')';
+        // userPic.style.backgroundImage = 'url(' + (user.photoURL || '../images/profile_placeholder.png') + ')';
+        // userPic.src= 'url(' + (user.photoURL || '../images/profile_placeholder.png') +')';
     } else {
         currentUID = null;
         splashPage.style.display = '';
@@ -88,7 +128,7 @@ function onAuthStateChanged(user) {
 }
 
 function checkEmail(email) {
-    var pattern = /^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$/;
+    const pattern = /^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$/;
     if (pattern.test(email.value)) {
         email.style.color = "green";
         return true;
@@ -102,8 +142,8 @@ function signInWithEmail() {
     if (firebase.auth().currentUser) {
         firebase.auth().signOut();
     } else {
-        var email = document.getElementById('email');
-        var password = document.getElementById('password');
+        let email = document.getElementById('email');
+        let password = document.getElementById('password');
         if (!checkEmail(email)) {
             alert('邮箱格式不正确！');
             email.focus();
@@ -131,7 +171,7 @@ function signInWithEmail() {
 }
 
 function sendPSResetEmail() {
-    var email = document.getElementById('email');
+    let email = document.getElementById('email');
     // [START sendpasswordemail]
     firebase.auth().sendPasswordResetEmail(email.value).then(function () {
         // Password Reset Email Sent!
@@ -140,8 +180,8 @@ function sendPSResetEmail() {
         // [END_EXCLUDE]
     }).catch(function (error) {
         // Handle Errors here.
-        var errorCode = error.code;
-        var errorMessage = error.message;
+        let errorCode = error.code;
+        let errorMessage = error.message;
         // [START_EXCLUDE]
         if (errorCode == 'auth/invalid-email') {
             alert('邮箱格式不正确！');
@@ -157,8 +197,8 @@ function sendPSResetEmail() {
 }
 
 function handleSignUp() {
-        var email = document.getElementById('email');
-        var password = document.getElementById('password');
+        let email = document.getElementById('email');
+        let password = document.getElementById('password');
         if (!checkEmail(email)) {
             alert('邮箱格式不正确！');
             email.focus();
@@ -173,8 +213,8 @@ function handleSignUp() {
         // [START createwithemail]
         firebase.auth().createUserWithEmailAndPassword(email.value, password.value).catch(function(error) {
             // Handle Errors here.
-            var errorCode = error.code;
-            var errorMessage = error.message;
+            let errorCode = error.code;
+            let errorMessage = error.message;
             // [START_EXCLUDE]
             if (errorCode == 'auth/weak-password') {
                 alert('密码太弱！');
@@ -192,7 +232,7 @@ function handleSignUp() {
 window.addEventListener('load', function () {
     firebase.auth().onAuthStateChanged(onAuthStateChanged);
     signInGoogle.addEventListener('click', function () {
-        var provider = new firebase.auth.GoogleAuthProvider();
+        let provider = new firebase.auth.GoogleAuthProvider();
         firebase.auth().signInWithPopup(provider);
     });
 

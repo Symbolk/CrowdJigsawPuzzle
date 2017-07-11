@@ -74,7 +74,7 @@ var config = ({
     shadowWidth: 120
 });
 
-var puzzle = new Html5Puzzle(config);
+var puzzle = new JigsawPuzzle(config);
 puzzle.zoom(-.3);
 var path;
 var movePath = false;
@@ -156,7 +156,7 @@ function onKeyUp(event) {
 }
 
 
-function Html5Puzzle(config) {
+function JigsawPuzzle(config) {
     instance = this; // the current object(which calls the function)
     this.currentZoom = 1;
     this.zoomScaleOnDrag = config.zoomScaleOnDrag;
@@ -172,10 +172,12 @@ function Html5Puzzle(config) {
     this.tileNum = this.tilesPerRow * this.tilesPerColumn;
 
     // output some info about this puzzle
-    console.log(this.tileNum + " : " + this.tilesPerRow + "*" + this.tilesPerColumn);
+    console.log("Game started : "+ this.tileNum + " tiles(" + this.tilesPerRow + " rows * " + this.tilesPerColumn+ " cols)");
+
+    // initialize the database which keeps the links
+    // initDatabase(this.tileNum);
 
     this.tileMarginWidth = this.tileWidth * 0.203125;
-
     this.selectedTile = undefined;
     this.selectedTileIndex = undefined;
     this.selectionGroup = undefined;
@@ -219,7 +221,7 @@ function Html5Puzzle(config) {
                 tile.shape = shape;
                 tile.imagePosition = new Point(x, y);
 
-                // tile fixed index
+                // tile fixed index/unique id
                 tile.findex = y * xTileCount + x;
                 //console.log(tile.findex);
 
@@ -402,10 +404,7 @@ function Html5Puzzle(config) {
     }
 
     this.pickTile = function () {
-
-
         if (instance.selectedTile) {
-
             if (!instance.selectedTile.lastScale) {
                 instance.selectedTile.lastScale = instance.zoomScaleOnDrag;
                 instance.selectedTile.scale(instance.selectedTile.lastScale);
@@ -423,7 +422,7 @@ function Html5Puzzle(config) {
             var pos = new Point(instance.selectedTile.position.x, instance.selectedTile.position.y);
             instance.selectedTile.position = new Point(0, 0);
             // the index of the tile
-            console.log('Selected : ' + instance.selectedTileIndex);
+            console.log('Tile selected : ' + instance.selectedTileIndex);
             // console.log(instance.selectedTile.findex);
             instance.selectionGroup.position = pos;
             // simulation:highlight 2 random tiles
@@ -496,10 +495,16 @@ function Html5Puzzle(config) {
             if (!hasConflict) {
                 // if the released tile has tiles around but no conflict
                 if (aroundTiles.length > 0) {
-                    // fitted release
+                    // release and combine
                     for (var i = 0; i < aroundTiles.length; i++) {
                         var tile = aroundTiles[i];
-                        console.log("Link : " + tile.findex + '-' + instance.selectedTileIndex);
+                        console.log("Tiles linked : " + instance.selectedTileIndex + '-' + tile.findex);
+                        // every release and combine is counted as one step
+                        updateLink(instance.selectedTileIndex, tile.findex);
+                        instance.steps += 1;
+                        // real time update the step counter
+                        var steps = document.getElementById("steps");
+                        steps.innerText = instance.steps;
                     }
                 }
 
@@ -515,11 +520,6 @@ function Html5Puzzle(config) {
                 instance.selectionGroup.remove();
                 instance.selectedTile = instance.selectionGroup = null;
                 project.activeLayer.addChild(tile);
-
-                // every pick and release is counted as one step
-                instance.steps += 1;
-                var steps = document.getElementById("steps");
-                steps.innerText = instance.steps;
 
                 // check num of errors every release
                 var errors = checkTiles();

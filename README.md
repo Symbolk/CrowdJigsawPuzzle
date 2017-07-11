@@ -3,6 +3,7 @@
 ---
 
 **Crowd Jigsaw Puzzle is an online game, on which multiple players work together to figure out a complex jigsaw puzzle.**
+**Designed to be an social experiment on Crowd Wisdom/Collective Intelligence**
 
 _Powered By [@Symbolk](http://www.symbolk.com)_
 
@@ -26,8 +27,13 @@ _Powered By [@Symbolk](http://www.symbolk.com)_
 > Firebase CLI
  
 ---
+## Game Rules:
 
-## Play it online!
+1, One puzzle is played by multiple players online, who cowork together in this way : every time when a player selects one tile, 4 tiles are highlighted and magnified. which are considered to be combined with the selected one,  according to the crowd's opinio.
+
+2, 2 indicators are placed at the left-bottom corner of the puzzle page---the steps and the time. When a user signs in, the timer starts; Every pick and combine is counted as one step. They can be hidden if you want.
+
+## Play it Online!
 
 1, Visit https://crowdjigsawpuzzle.firebaseapp.com (Only For Test, Better Run Locally)
 
@@ -41,7 +47,7 @@ _Powered By [@Symbolk](http://www.symbolk.com)_
 ![Puzzle](https://github.com/Symbolk/CrowdJigsawPuzzle/blob/master/screenshots/puzzle.jpg)
 
 
-## Run it locally!
+## Run it Locally!
 
 1, Before you run it, install and config Firebase first, just run the following commands in shell(Linux) or terminal(macOS) or cmd(Windows):
 
