@@ -27,26 +27,29 @@
         <!-- Header section containing title -->
         <section id="page-splash">
             <h3 class="logo mdl-color-text--white">Crowd Jigsaw Puzzle</h3>
-                     <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--3-col-desktop">
-                    <div class="mdl-card__title mdl-color--light-blue-600 mdl-color-text--white">
-                        <h2 class="mdl-card__title-text">邮件 &amp; 密码登录</h2>
+            <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--3-col mdl-cell--3-col-tablet mdl-cell--3-col-desktop">
+                <div class="mdl-card__title mdl-color--light-blue-600 mdl-color-text--white">
+                    <h2 class="mdl-card__title-text">邮件 &amp; 密码登录</h2>
+                </div>
+                <div class="mdl-card__supporting-text mdl-color-text--grey-600">
+                    <p>已注册用户？请输入邮箱地址和密码登录</p>
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                        <input class="mdl-textfield__input mdl-cell--middle" type="text" id="email">
+                        <label class="mdl-textfield__label" for="email">Email</label>
                     </div>
-                    <div class="mdl-card__supporting-text mdl-color-text--grey-600">
-                        <p>已注册用户？请输入邮箱地址和密码登录</p>
-                        <input class="mdl-textfield__input mdl-cell--middle" type="text" id="email" name="email" placeholder="请输入邮箱地址" />
-                        <br/>
-                        <input class="mdl-textfield__input mdl-cell--middle" type="password" id="password" name="password" placeholder="请输入密码" />
-                        <br/>
-                        <button class="mdl-button mdl-js-button mdl-button--raised" style="margin:0 auto;" id="sign-in-email" name="sign_in">登录</button>
-                        &nbsp;&nbsp;&nbsp;
-                        <button class="mdl-button mdl-js-button mdl-button--raised" id="reset-password" name="reset_password">重置密码</button>
-                        <hr style="height:5px;border:none;border-top:5px groove skyblue;" />
-                        <div class="sign-up-container">
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                        <input class="mdl-textfield__input mdl-cell--middle" type="password" id="password">
+                        <label class="mdl-textfield__label" for="password">Password</label>
+                    </div>
+                    <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" style="margin:0 auto;" id="sign-in-email" name="sign_in">登录</button>                    &nbsp;&nbsp;&nbsp;
+                    <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent" id="reset-password" name="reset_password">重置密码</button>
+                    <hr style="height:5px;border:none;border-top:5px groove skyblue;" />
+                    <div class="sign-up-container">
                         <p>没有账户？请输入邮箱地址和密码进行注册</p>
-                        <button class="mdl-button mdl-js-button mdl-button--raised" id="sign-up-email" name="sign_up">注册</button>
-                        </div>
+                        <button class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" id="sign-up-email" name="sign_up">注册</button>
                     </div>
                 </div>
+            </div>
             <div>
                 <button id="sign-in-google" class="mdl-button--raised mdl-button mdl-js-button mdl-js-ripple-effect"><i class="material-icons">account_circle</i>Google账户登录</button>
             </div>

@@ -173,10 +173,14 @@ function JigsawPuzzle(config) {
 
     // output some info about this puzzle
     console.log("Game started : "+ this.tileNum + " tiles(" + this.tilesPerRow + " rows * " + this.tilesPerColumn+ " cols)");
-
+      
     // initialize the database which keeps the links
     // initDatabase(this.tileNum);
-
+    // SIMULATION CODE
+    // updateLink(0, 1);
+    // updateLink(0, 2);
+    // updateLink(0, 3);
+          
     this.tileMarginWidth = this.tileWidth * 0.203125;
     this.selectedTile = undefined;
     this.selectedTileIndex = undefined;
@@ -425,7 +429,25 @@ function JigsawPuzzle(config) {
             console.log('Tile selected : ' + instance.selectedTileIndex);
             // console.log(instance.selectedTile.findex);
             instance.selectionGroup.position = pos;
-            // simulation:highlight 2 random tiles
+            
+            var topN = 2;         
+            var topNIndex = recommendTiles(0, topN);
+            console.log(topNIndex.toString());   //object         
+            console.log(topNIndex['1']);
+            // for(var i=0;i<topN;i++){
+            //     console.log(topNIndex[i.toString()]);
+            // }
+
+            // if(topNIndex.length > 0){
+                // for(var i in topNIndex){
+                //     console.log(i);
+                //     // console.log(topNIndex[i]);
+                // }
+            // }else{
+            //     console.log('No recommendation.');
+            // }
+
+            // SIMULATION :highlight 2 random tiles
             var r1 = parseInt(Math.random() * instance.tileNum, 10);
             var r2 = parseInt(Math.random() * instance.tileNum, 10);
             // console.log(r1);

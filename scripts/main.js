@@ -10,7 +10,7 @@ const userName = document.querySelector('#user-name');
 
 
 var listeningFirebaseRefs = [];
-var currentUID;
+var currentUID; // firebase.auth().currentUser.uid;
 var currentUName;
 /**
  * click the user charm and show the user profile
@@ -73,13 +73,13 @@ function writeUserData(userId, name, email, imageUrl) {
 function initDatabase(tilesNum){
     for(let i = 0;i < tilesNum;i++){
         firebase.database().ref('links/' + i).set({
-            self : i
+            source : i
         });
     }
 }
 
 /**
- *  Every release and combine update one link in the database
+ *  Triggered by every release and combine(i.e. one step)
  *  When one link is created by one user: 
  *  1, If the link does not exist, update the tile list of the selected tile and the combined tile;
  *  2, If the link already exists, push(append) the user to the supporter list(child) of the selected tile;
@@ -91,16 +91,75 @@ function initDatabase(tilesNum){
  */
 function updateLink(sourceTileIndex, targetTileIndex){
     // Update the link bidirectionally
-    let sourceRef=firebase.database().ref('links/' + sourceTileIndex + '/' + targetTileIndex);
-    let targetRef=firebase.database().ref('links/' + targetTileIndex + '/' + sourceTileIndex);
-    
-    sourceRef.push({
-        supporter : currentUName
+    let sourceRef=firebase.database().ref('links/' + sourceTileIndex);
+    let targetRef=firebase.database().ref('links/' + targetTileIndex);
+    let sourceIndexString = sourceTileIndex.toString();
+    let targetIndexString = targetTileIndex.toString();
+
+    sourceRef.once('value', snapshot=>{
+        if(!snapshot.hasChild(targetIndexString)){
+            // the source-target does not exist       
+            sourceRef.child(targetIndexString).set({
+                target : targetTileIndex,
+                supNum : 1,
+                supporters : {
+                    [currentUName] : true
+                }
+            });
+        }else{
+            // the source-target link already exists
+            // and the user did not support it before
+            if(snapshot.child(targetIndexString).val().supporters[currentUName]!= true){
+                let newSupNum = snapshot.child(targetIndexString).val().supNum +1;
+                let updateLink = {};
+                updateLink['supNum'] = newSupNum;
+                updateLink['supporters/'+ currentUName] = true;
+                sourceRef.child(targetIndexString).update(updateLink);
+            }
+        }
     });
-    
-    targetRef.push({
-        supporter : currentUName
+    targetRef.once('value', snapshot=>{
+        if(!snapshot.hasChild(sourceIndexString)){
+            // the source-target does not exist       
+            sourceRef.child(sourceIndexString).set({
+                target : sourceTileIndex,
+                supNum : 1,
+                supporters : {
+                    [currentUName] : true
+                }
+            });
+        }else{
+            // the source-target link already exists
+            // and the user did not support it before
+            if(snapshot.child(sourceIndexString).val().supporters[currentUName]!= true){
+                let newSupNum = snapshot.child(sourceIndexString).val().supNum +1;
+                let updateLink = {};
+                updateLink['supNum'] = newSupNum;
+                updateLink['supporters/'+ currentUName] = true;
+                sourceRef.child(sourceIndexString).update(updateLink);
+            }
+        }
     });
+}
+
+/**
+ * Recommend 1~4 tiles for the current user
+ * @param {*} selectedTileIndex 
+ * @param {*} n 
+ */
+function recommendTiles(selectedTileIndex, n){
+     let topTilesRef=firebase.database().ref('links/' + selectedTileIndex).orderByChild('supNum');// ascending order     
+    //  let topNTilesRef=topTilesRef.limitToLast(n);
+     let topNIndex=new Array();
+     topTilesRef.once('value').then(snapshot=>{
+         snapshot.forEach(childSnapshot=>{
+             if(!(isNaN(childSnapshot.key))){
+               topNIndex.push(childSnapshot.key);
+             }
+         });
+        // console.log(topNIndex); // has value
+     });
+     return topNIndex;
 }
 
 /**
@@ -115,7 +174,7 @@ function onAuthStateChanged(user) {
     if (user) {
         // user is signed in
         currentUID = user.uid;
-        currentUName = user.displayName || user.email ;
+        currentUName = user.displayName || ( user.email.toString().split('.')[0] ) ;
         splashPage.style.display = 'none';
         writeUserData(user.uid, user.displayName, user.email, user.photoURL);
         userName.textContent = user.displayName || user.email;
