@@ -60,20 +60,25 @@
             </div>
         </section>
 
-        <header class="header mdl-layout__header mdl-color-text--white mdl-layout__header--transparent">
-            <div class="mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet mdl-grid">
-                <div class="mdl-layout__header-row mdl-shadow--8dp mdl-cell mdl-cell--12-col mdl-cell--12-col-tablet mdl-cell--4-col-desktop">
-                    <h3>Crowd Jigsaw Puzzle</h3>
+        <div class="title">
+            <header class="header mdl-layout__header mdl-color-text--white mdl-layout__header--transparent">
+                <div class="mdl-cell mdl-cell--12-col mdl-cell--8-col-tablet mdl-grid">
+                    <div class="mdl-layout__header-row mdl-shadow--8dp mdl-cell mdl-cell--12-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop">
+                        <h3>Crowd Jigsaw Puzzle</h3>
+                    </div>
                 </div>
-            </div>
-        </header>
+            </header>
+        </div>
     </div>
     <main class="puzzle">
         <canvas id="canvas" class="canvas" resize></canvas>
     </main>
+
     <div class="charms mdl-shadow--8dp">
-        <button id="show-user" type="button" class="user mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect">
-            <i class="material-icons md-48">account_circle</i><button/>
+        <!---->
+            <button type="button" id="show-user" class="user material-icons md-48 mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect">
+                <i class="material-icons" md-56>account_circle</i>
+            </button>
         <!--<img width="50" height="50" src="images/user.png" class="user" />-->
         <img width="50" height="50" src="images/help.png" class="help" />
         <img width="50" height="50" src="images/zoomOut.png" class="zoomOut" />
@@ -125,4 +130,5 @@
     </div>
     <script type="text/javascript" src="scripts/main.js"></script>
 </body>
+
 </html>

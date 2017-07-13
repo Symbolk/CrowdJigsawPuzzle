@@ -76,6 +76,7 @@ function initDatabase(tilesNum) {
             source: i
         });
     }
+    console.log('Database initialized.');
 }
 
 /**
@@ -121,7 +122,7 @@ function updateLink(sourceTileIndex, targetTileIndex) {
     targetRef.once('value', snapshot => {
         if (!snapshot.hasChild(sourceIndexString)) {
             // the source-target does not exist       
-            sourceRef.child(sourceIndexString).set({
+            targetRef.child(sourceIndexString).set({
                 target: sourceTileIndex,
                 supNum: 1,
                 supporters: {
@@ -136,7 +137,7 @@ function updateLink(sourceTileIndex, targetTileIndex) {
                 let updateLink = {};
                 updateLink['supNum'] = newSupNum;
                 updateLink['supporters/' + currentUName] = true;
-                sourceRef.child(sourceIndexString).update(updateLink);
+                targetRef.child(sourceIndexString).update(updateLink);
             }
         }
     });
@@ -168,7 +169,7 @@ function recommendTiles(selectedTileIndex, n) {
  * @param {*} timer 
  */
 let hour, minute, second, t;
-let timer=document.querySelector('#timer'); 
+let timer = document.querySelector('#timer');
 function initTimer() {
     timer.innerHTML = "00:00:00";
     hour = minute = second = 0;
@@ -187,16 +188,16 @@ function startIt() {
     timer.innerHTML = judge(hour) + ":" + judge(minute) + ":" + judge(second);
     t = setTimeout("startIt()", 1000);
 }
-function judge(arg){
-        return arg >= 10 ? arg : "0" + arg;
+function judge(arg) {
+    return arg >= 10 ? arg : "0" + arg;
 }
 /**
  *  Bind event handlers for the show_steps and show_time switch
  */
-document.querySelector('#show_steps').addEventListener('click', function(){
-    $r('#steps_chip').fadeToggle('slow');
+document.querySelector('#show_steps').addEventListener('click', function () {
+    $('#steps_chip').fadeToggle('slow');
 });
-document.querySelector('#show_timer').addEventListener('click', function(){
+document.querySelector('#show_timer').addEventListener('click', function () {
     $('#timer_chip').fadeToggle('slow');
 });
 
@@ -206,6 +207,9 @@ document.querySelector('#show_timer').addEventListener('click', function(){
  */
 function onAuthStateChanged(user) {
     if (user && currentUID === user.uid) {
+        initTimer();
+        // initialize the database which keeps the links
+        // initDatabase(64);
         return;
     }
     // cleanUI();
@@ -219,6 +223,8 @@ function onAuthStateChanged(user) {
         // userPic.style.backgroundImage = 'url(' + (user.photoURL || '../images/profile_placeholder.png') + ')';
         // userPic.src= 'url(' + (user.photoURL || '../images/profile_placeholder.png') +')';
         initTimer();
+        // initialize the database which keeps the links
+        // initDatabase(64);
     } else {
         currentUID = null;
         splashPage.style.display = '';

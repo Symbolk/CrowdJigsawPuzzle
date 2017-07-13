@@ -9,6 +9,7 @@ $('.charms').mouseleave(function () {
         // marginRight : "hide"  
         opacity: 0
     });
+     $('.title').animate({  opacity: 0 });
 });
 $('.charms').mouseover(function () {
     $('.charms').animate({
@@ -19,7 +20,9 @@ $('.charms').mouseover(function () {
         // marginRight : "show" 
         opacity: 0.75
     });
+     $('.title').animate({  opacity: 0.75 });
 });
+
 
 // $('.header').hover(
 //     function () {
@@ -174,8 +177,6 @@ function JigsawPuzzle(config) {
     // output some info about this puzzle
     console.log("Game started : "+ this.tileNum + " tiles(" + this.tilesPerRow + " rows * " + this.tilesPerColumn+ " cols)");
       
-    // initialize the database which keeps the links
-    // initDatabase(this.tileNum);
     // SIMULATION CODE
     // updateLink(0, 1);
     // updateLink(0, 2);
