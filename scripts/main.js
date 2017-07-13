@@ -70,10 +70,10 @@ function writeUserData(userId, name, email, imageUrl) {
  * For every tile/node, create one record
  * RUN ONLY ONCE
  */
-function initDatabase(tilesNum){
-    for(let i = 0;i < tilesNum;i++){
+function initDatabase(tilesNum) {
+    for (let i = 0; i < tilesNum; i++) {
         firebase.database().ref('links/' + i).set({
-            source : i
+            source: i
         });
     }
 }
@@ -89,53 +89,53 @@ function initDatabase(tilesNum){
  * @param {*} sourceTileIndex the selected tile index
  * @param {*} targetTileIndex the around combined tile index
  */
-function updateLink(sourceTileIndex, targetTileIndex){
+function updateLink(sourceTileIndex, targetTileIndex) {
     // Update the link bidirectionally
-    let sourceRef=firebase.database().ref('links/' + sourceTileIndex);
-    let targetRef=firebase.database().ref('links/' + targetTileIndex);
+    let sourceRef = firebase.database().ref('links/' + sourceTileIndex);
+    let targetRef = firebase.database().ref('links/' + targetTileIndex);
     let sourceIndexString = sourceTileIndex.toString();
     let targetIndexString = targetTileIndex.toString();
 
-    sourceRef.once('value', snapshot=>{
-        if(!snapshot.hasChild(targetIndexString)){
+    sourceRef.once('value', snapshot => {
+        if (!snapshot.hasChild(targetIndexString)) {
             // the source-target does not exist       
             sourceRef.child(targetIndexString).set({
-                target : targetTileIndex,
-                supNum : 1,
-                supporters : {
-                    [currentUName] : true
+                target: targetTileIndex,
+                supNum: 1,
+                supporters: {
+                    [currentUName]: true
                 }
             });
-        }else{
+        } else {
             // the source-target link already exists
             // and the user did not support it before
-            if(snapshot.child(targetIndexString).val().supporters[currentUName]!= true){
-                let newSupNum = snapshot.child(targetIndexString).val().supNum +1;
+            if (snapshot.child(targetIndexString).val().supporters[currentUName] != true) {
+                let newSupNum = snapshot.child(targetIndexString).val().supNum + 1;
                 let updateLink = {};
                 updateLink['supNum'] = newSupNum;
-                updateLink['supporters/'+ currentUName] = true;
+                updateLink['supporters/' + currentUName] = true;
                 sourceRef.child(targetIndexString).update(updateLink);
             }
         }
     });
-    targetRef.once('value', snapshot=>{
-        if(!snapshot.hasChild(sourceIndexString)){
+    targetRef.once('value', snapshot => {
+        if (!snapshot.hasChild(sourceIndexString)) {
             // the source-target does not exist       
             sourceRef.child(sourceIndexString).set({
-                target : sourceTileIndex,
-                supNum : 1,
-                supporters : {
-                    [currentUName] : true
+                target: sourceTileIndex,
+                supNum: 1,
+                supporters: {
+                    [currentUName]: true
                 }
             });
-        }else{
+        } else {
             // the source-target link already exists
             // and the user did not support it before
-            if(snapshot.child(sourceIndexString).val().supporters[currentUName]!= true){
-                let newSupNum = snapshot.child(sourceIndexString).val().supNum +1;
+            if (snapshot.child(sourceIndexString).val().supporters[currentUName] != true) {
+                let newSupNum = snapshot.child(sourceIndexString).val().supNum + 1;
                 let updateLink = {};
                 updateLink['supNum'] = newSupNum;
-                updateLink['supporters/'+ currentUName] = true;
+                updateLink['supporters/' + currentUName] = true;
                 sourceRef.child(sourceIndexString).update(updateLink);
             }
         }
@@ -147,20 +147,58 @@ function updateLink(sourceTileIndex, targetTileIndex){
  * @param {*} selectedTileIndex 
  * @param {*} n 
  */
-function recommendTiles(selectedTileIndex, n){
-     let topTilesRef=firebase.database().ref('links/' + selectedTileIndex).orderByChild('supNum');// ascending order     
+function recommendTiles(selectedTileIndex, n) {
+    let topTilesRef = firebase.database().ref('links/' + selectedTileIndex).orderByChild('supNum');// ascending order     
     //  let topNTilesRef=topTilesRef.limitToLast(n);
-     let topNIndex=new Array();
-     topTilesRef.once('value').then(snapshot=>{
-         snapshot.forEach(childSnapshot=>{
-             if(!(isNaN(childSnapshot.key))){
-               topNIndex.push(childSnapshot.key);
-             }
-         });
+    let topNIndex = new Array();
+    topTilesRef.once('value').then(snapshot => {
+        snapshot.forEach(childSnapshot => {
+            if (!(isNaN(childSnapshot.key))) {
+                topNIndex.push(childSnapshot.key);
+            }
+        });
         // console.log(topNIndex); // has value
-     });
-     return topNIndex;
+    });
+    return topNIndex;
 }
+
+
+/**
+ * Initialize the timer: reset and start it once the user signs in 
+ * @param {*} timer 
+ */
+let hour, minute, second, t;
+let timer=document.querySelector('#timer'); 
+function initTimer() {
+    timer.innerHTML = "00:00:00";
+    hour = minute = second = 0;
+    startIt();
+}
+function startIt() {
+    second++;
+    if (second >= 60) {
+        second = 0;
+        minute++;
+    }
+    if (minute >= 60) {
+        minute = 0;
+        hour++;
+    }
+    timer.innerHTML = judge(hour) + ":" + judge(minute) + ":" + judge(second);
+    t = setTimeout("startIt()", 1000);
+}
+function judge(arg){
+        return arg >= 10 ? arg : "0" + arg;
+}
+/**
+ *  Bind event handlers for the show_steps and show_time switch
+ */
+document.querySelector('#show_steps').addEventListener('click', function(){
+    $r('#steps_chip').fadeToggle('slow');
+});
+document.querySelector('#show_timer').addEventListener('click', function(){
+    $('#timer_chip').fadeToggle('slow');
+});
 
 /**
  * Track the user state change
@@ -174,12 +212,13 @@ function onAuthStateChanged(user) {
     if (user) {
         // user is signed in
         currentUID = user.uid;
-        currentUName = user.displayName || ( user.email.toString().split('.')[0] ) ;
+        currentUName = user.displayName || (user.email.toString().split('.')[0]);
         splashPage.style.display = 'none';
         writeUserData(user.uid, user.displayName, user.email, user.photoURL);
         userName.textContent = user.displayName || user.email;
         // userPic.style.backgroundImage = 'url(' + (user.photoURL || '../images/profile_placeholder.png') + ')';
         // userPic.src= 'url(' + (user.photoURL || '../images/profile_placeholder.png') +')';
+        initTimer();
     } else {
         currentUID = null;
         splashPage.style.display = '';
@@ -209,7 +248,7 @@ function signInWithEmail() {
             signInEmail.disabled = false;
             return;
         }
-        if(password.value.length<3){
+        if (password.value.length < 3) {
             alert('请输入密码！');
             return;
         }
@@ -219,7 +258,7 @@ function signInWithEmail() {
                 alert('密码错误！');
             } else if (error.code == 'auth/user-not-found') {
                 alert('用户不存在！');
-            }else{
+            } else {
                 alert(error.message);
                 console.log(error);
             }
@@ -245,9 +284,9 @@ function sendPSResetEmail() {
         if (errorCode == 'auth/invalid-email') {
             alert('邮箱格式不正确！');
         } else if (errorCode == 'auth/user-not-found') {
-            alert('用户不存在！');    
-        }else{
-            alert(errorMessage);              
+            alert('用户不存在！');
+        } else {
+            alert(errorMessage);
             console.log(error);
         }
         // [END_EXCLUDE]
@@ -256,37 +295,37 @@ function sendPSResetEmail() {
 }
 
 function handleSignUp() {
-        let email = document.getElementById('email');
-        let password = document.getElementById('password');
-        if (!checkEmail(email)) {
-            alert('邮箱格式不正确！');
-            email.focus();
-            signInEmail.disabled = false;
-            return;
-        }
-        if (password.value.length < 3) {
-            alert('请输入密码！');
-            return;
-        }
-        // Sign in with email and pass.
-        // [START createwithemail]
-        firebase.auth().createUserWithEmailAndPassword(email.value, password.value).catch(function(error) {
-            // Handle Errors here.
-            let errorCode = error.code;
-            let errorMessage = error.message;
-            // [START_EXCLUDE]
-            if (errorCode == 'auth/weak-password') {
-                alert('密码太弱！');
-            } else {
-                alert(errorMessage);
-            }
-            console.log(error);
-            // [END_EXCLUDE]
-        }).then(function(){
-            alert('注册成功，但邮箱未验证！');
-        });
-        // [END createwithemail]
+    let email = document.getElementById('email');
+    let password = document.getElementById('password');
+    if (!checkEmail(email)) {
+        alert('邮箱格式不正确！');
+        email.focus();
+        signInEmail.disabled = false;
+        return;
     }
+    if (password.value.length < 3) {
+        alert('请输入密码！');
+        return;
+    }
+    // Sign in with email and pass.
+    // [START createwithemail]
+    firebase.auth().createUserWithEmailAndPassword(email.value, password.value).catch(function (error) {
+        // Handle Errors here.
+        let errorCode = error.code;
+        let errorMessage = error.message;
+        // [START_EXCLUDE]
+        if (errorCode == 'auth/weak-password') {
+            alert('密码太弱！');
+        } else {
+            alert(errorMessage);
+        }
+        console.log(error);
+        // [END_EXCLUDE]
+    }).then(function () {
+        alert('注册成功，但邮箱未验证！');
+    });
+    // [END createwithemail]
+}
 
 window.addEventListener('load', function () {
     firebase.auth().onAuthStateChanged(onAuthStateChanged);
