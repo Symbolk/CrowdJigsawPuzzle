@@ -11,7 +11,7 @@ _Powered By [@Symbolk](http://www.symbolk.com)_
 
 > Language : 
 
-> [Javascript(ES5)/Paperscript/Html5/CSS3]
+> [Javascript/Paperscript/Html5/CSS3]
 
 > Based on :
 

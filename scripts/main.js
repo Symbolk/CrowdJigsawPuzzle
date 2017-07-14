@@ -163,11 +163,11 @@ function recommendTiles(selectedTileIndex, n, tiles) {
         if(topNIndex.length > 0){
             for(let i of topNIndex){
                let tile = tiles[Number(i)];
-            //    console.log(tile.findex);
-            //    tile.strokeColor="#FF0000";
+            //    console.log(tile);
+               tile._style.strokeColor="#FF0000";
                tile.scale(1.25);
                setTimeout(function(){
-                //    tile.strokeColor="#FFF";
+                   tile._style.strokeColor="#FFF";
                    tile.scale(1/1.25);
                }, 3000);
             }        
