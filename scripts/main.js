@@ -133,8 +133,8 @@ function updateLink(sourceTileIndex, targetTileIndex) {
             // the source-target link already exists
             // and the user did not support it before
             if (snapshot.child(sourceIndexString).val().supporters[currentUName] != true) {
-                let newSupNum = snapshot.child(sourceIndexString).val().supNum + 1;
                 let updateLink = {};
+                let newSupNum = snapshot.child(sourceIndexString).val().supNum + 1;
                 updateLink['supNum'] = newSupNum;
                 updateLink['supporters/' + currentUName] = true;
                 targetRef.child(sourceIndexString).update(updateLink);
@@ -148,19 +148,34 @@ function updateLink(sourceTileIndex, targetTileIndex) {
  * @param {*} selectedTileIndex 
  * @param {*} n 
  */
-function recommendTiles(selectedTileIndex, n) {
+function recommendTiles(selectedTileIndex, n, tiles) {
     let topTilesRef = firebase.database().ref('links/' + selectedTileIndex).orderByChild('supNum');// ascending order     
-    //  let topNTilesRef=topTilesRef.limitToLast(n);
+    let topNTilesRef=topTilesRef.limitToLast(n);
     let topNIndex = new Array();
-    topTilesRef.once('value').then(snapshot => {
+    topNTilesRef.once('value').then(snapshot => {
+        // console.log(snapshot.val());
         snapshot.forEach(childSnapshot => {
             if (!(isNaN(childSnapshot.key))) {
                 topNIndex.push(childSnapshot.key);
             }
         });
-        // console.log(topNIndex); // has value
+    }).then(function(){
+        if(topNIndex.length > 0){
+            for(let i of topNIndex){
+               let tile = tiles[Number(i)];
+            //    console.log(tile.findex);
+            //    tile.strokeColor="#FF0000";
+               tile.scale(1.25);
+               setTimeout(function(){
+                //    tile.strokeColor="#FFF";
+                   tile.scale(1/1.25);
+               }, 3000);
+            }        
+        }else{
+            console.log('No recommendation.');
+        }
+        // return topNIndex;
     });
-    return topNIndex;
 }
 
 

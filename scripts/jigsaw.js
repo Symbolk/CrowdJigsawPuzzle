@@ -432,41 +432,26 @@ function JigsawPuzzle(config) {
             instance.selectionGroup.position = pos;
             
             var topN = 2;         
-            var topNIndex = recommendTiles(0, topN);
-            console.log(topNIndex.toString());   //object         
-            console.log(topNIndex['1']);
-            // for(var i=0;i<topN;i++){
-            //     console.log(topNIndex[i.toString()]);
-            // }
-
-            // if(topNIndex.length > 0){
-                // for(var i in topNIndex){
-                //     console.log(i);
-                //     // console.log(topNIndex[i]);
-                // }
-            // }else{
-            //     console.log('No recommendation.');
-            // }
-
+            // returns an array with length <= topN
+            recommendTiles(instance.selectedTileIndex, topN, instance.tiles);
+            
             // SIMULATION :highlight 2 random tiles
-            var r1 = parseInt(Math.random() * instance.tileNum, 10);
-            var r2 = parseInt(Math.random() * instance.tileNum, 10);
-            // console.log(r1);
-            // console.log(r2);
+            // var r1 = parseInt(Math.random() * instance.tileNum, 10);
+            // var r2 = parseInt(Math.random() * instance.tileNum, 10);
 
-            var t1 = instance.tiles[r1];
-            var t2 = instance.tiles[r2];
-            t1.strokeColor = "#FF0000";
-            t2.strokeColor = "#FF0000";
-            t1.scale(instance.zoomScaleOnDrag);
-            t2.scale(instance.zoomScaleOnDrag);
-            // disappear after 2000 ms
-            setTimeout(function () {
-                t1.strokeColor = "#FFF";
-                t2.strokeColor = "#FFF";
-                t1.scale(1.0 / instance.zoomScaleOnDrag);
-                t2.scale(1.0 / instance.zoomScaleOnDrag);
-            }, 1000);
+            // var t1 = instance.tiles[r1];
+            // var t2 = instance.tiles[r2];
+            // t1.strokeColor = "#FF0000";
+            // t2.strokeColor = "#FF0000";
+            // t1.scale(instance.zoomScaleOnDrag);
+            // t2.scale(instance.zoomScaleOnDrag);
+            // // disappear after 2000 ms
+            // setTimeout(function () {
+            //     t1.strokeColor = "#FFF";
+            //     t2.strokeColor = "#FFF";
+            //     t1.scale(1.0 / instance.zoomScaleOnDrag);
+            //     t2.scale(1.0 / instance.zoomScaleOnDrag);
+            // }, 1000);
         }
     }
 
