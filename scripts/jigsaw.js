@@ -9,7 +9,7 @@ $('.charms').mouseleave(function () {
         // marginRight : "hide"  
         opacity: 0
     });
-     $('.title').animate({  opacity: 0 });
+    $('.title').animate({ opacity: 0 });
 });
 $('.charms').mouseover(function () {
     $('.charms').animate({
@@ -20,7 +20,7 @@ $('.charms').mouseover(function () {
         // marginRight : "show" 
         opacity: 0.75
     });
-     $('.title').animate({  opacity: 0.75 });
+    $('.title').animate({ opacity: 0.75 });
 });
 
 
@@ -112,20 +112,17 @@ var charmsWidth = $('.charms').css('width').replace('px', '');
 $('.puzzle-image').css('margin', '-' + imgHeight / 2 + 'px 0 0 -' + imgWidth / 2 + 'px');
 
 function onMouseDown(event) {
-    // switch (event.event.button) {
-    //     case 0:
-    //         {
-    puzzle.pickTile();
-    // break;
-    // }
-    // right click to roate the tile
-    // case 2: {
-    //   if (puzzle.selectedTile) {
-    //      puzzle.selectedTile.rotate(90);
-    //  }
-    // }
-    // }
-
+    switch (event.event.button) {
+        case 0: {
+            puzzle.pickTile();
+            break;
+        }
+        // right click to drag a group of tiles
+        case 2: {
+            puzzle.pickGroup();
+            break;
+        }
+    }
 }
 
 
@@ -175,13 +172,15 @@ function JigsawPuzzle(config) {
     this.tileNum = this.tilesPerRow * this.tilesPerColumn;
 
     // output some info about this puzzle
-    console.log("Game started : "+ this.tileNum + " tiles(" + this.tilesPerRow + " rows * " + this.tilesPerColumn+ " cols)");
-      
+    console.log("Game started : " + this.tileNum + " tiles(" + this.tilesPerRow + " rows * " + this.tilesPerColumn + " cols)");
+
     // SIMULATION CODE
-    // updateLink(0, 1);
-    // updateLink(0, 2);
-    // updateLink(0, 3);
-          
+    var tmp=[1,2,3];
+    var tmp2=[1,3,5,8];
+    // updateLinks(0, tmp2);
+
+    // removeLinks(0);
+
     this.tileMarginWidth = this.tileWidth * 0.203125;
     this.selectedTile = undefined;
     this.selectedTileIndex = undefined;
@@ -408,6 +407,11 @@ function JigsawPuzzle(config) {
         return targetRaster;
     }
 
+    this.pickGroup = function () {
+        // get the around tiles
+
+    }
+
     this.pickTile = function () {
         if (instance.selectedTile) {
             if (!instance.selectedTile.lastScale) {
@@ -430,11 +434,11 @@ function JigsawPuzzle(config) {
             console.log('Tile selected : ' + instance.selectedTileIndex);
             // console.log(instance.selectedTile.findex);
             instance.selectionGroup.position = pos;
-            
-            var topN = 2;         
+
+            var topN = 2;
             // returns an array with length <= topN
             recommendTiles(instance.selectedTileIndex, topN, instance.tiles);
-            
+
             // SIMULATION :highlight 2 random tiles
             // var r1 = parseInt(Math.random() * instance.tileNum, 10);
             // var r2 = parseInt(Math.random() * instance.tileNum, 10);
@@ -499,22 +503,29 @@ function JigsawPuzzle(config) {
             }
 
             // current no tile&&4 sides no conficts, a successful release
-            // isolated || fitted
+            // fitted(has tiles around it)
+
             if (!hasConflict) {
                 // if the released tile has tiles around but no conflict
+                var aroundTileIndexes = new Array();
                 if (aroundTiles.length > 0) {
                     // release and combine
                     for (var i = 0; i < aroundTiles.length; i++) {
-                        var tile = aroundTiles[i];
-                        console.log("Tiles linked : " + instance.selectedTileIndex + '-' + tile.findex);
-                        // every release and combine is counted as one step
-                        updateLink(instance.selectedTileIndex, tile.findex);
-                        instance.steps += 1;
-                        // real time update the step counter
-                        var steps = document.getElementById("steps");
-                        steps.innerText = instance.steps;
+                        aroundTileIndexes.push(aroundTiles[i].findex);
+                        console.log("Tiles linked : " + instance.selectedTileIndex + '-' + aroundTiles[i].findex);
                     }
+                    updateLinks(instance.selectedTileIndex, aroundTileIndexes);
+                } else if (aroundTiles.length === 0) {
+                    // isolated
+                    removeLinks(instance.selectedTileIndex);// to be done
+                    console.log('Remove');
                 }
+
+                // every pick and release is counted as one step
+                // real time update the step counter
+                instance.steps += 1;
+                var steps = document.getElementById("steps");
+                steps.innerText = instance.steps;
 
                 if (instance.selectedTile.lastScale) {
                     instance.selectedTile.scale(1 / instance.selectedTile.lastScale);
@@ -522,6 +533,8 @@ function JigsawPuzzle(config) {
                 }
 
                 instance.selectionGroup.remove();
+
+
                 var tile = instance.tiles[instance.selectedTileIndex];
                 tile.position = roundPosition;
                 tile.cellPosition = cellPosition;
