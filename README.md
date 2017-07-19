@@ -9,16 +9,16 @@ _Powered By [@Symbolk](http://www.symbolk.com)_
 
 ## Overview
 
-> Language : 
+Language : 
 
 > [Javascript/Paperscript/Html5/CSS3]
 
-> Based on :
+Based on :
 
 > [Firebase](http://www.firebase.google.com/ "Firebase offical site") 
 > [paper.js](http://www.paperjs.org/ "Paper.js offical site") 
 
-> Requirements :
+Requirements :
 
 > Chrome Browser
 

@@ -113,7 +113,7 @@ canvas
 	left: 20px;
 	bottom: 20px;
     /*border:1px dashed #000;*/
-    display: inline;
+    display: inline-block;
     background-color:#f0f3f9;
 }
 

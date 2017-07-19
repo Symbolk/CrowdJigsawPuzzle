@@ -10,6 +10,7 @@ $('.charms').mouseleave(function () {
         opacity: 0
     });
     $('.title').animate({ opacity: 0 });
+    $('.info').animate({ opacity: 0 });    
 });
 $('.charms').mouseover(function () {
     $('.charms').animate({
@@ -21,6 +22,7 @@ $('.charms').mouseover(function () {
         opacity: 0.75
     });
     $('.title').animate({ opacity: 0.75 });
+    $('.info').animate({ opacity: 0.75 });
 });
 
 
@@ -177,7 +179,9 @@ function JigsawPuzzle(config) {
     // SIMULATION CODE
     var tmp=[1,2,3];
     var tmp2=[1,3,5,8];
-    // updateLinks(0, tmp2);
+    var tmp3=[1,3,5,7];    
+    // updateLinks(0, tmp); // symbolk@qq    
+    // updateLinks(0, tmp3); // symbolk@163
 
     // removeLinks(0);
 
@@ -518,7 +522,8 @@ function JigsawPuzzle(config) {
                 } else if (aroundTiles.length === 0) {
                     // isolated
                     removeLinks(instance.selectedTileIndex);// to be done
-                    console.log('Remove');
+                    // meaning that all around links are removed 
+                    console.log(instance.selectedTileIndex + '-= 0');
                 }
 
                 // every pick and release is counted as one step

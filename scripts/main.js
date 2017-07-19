@@ -74,19 +74,6 @@ function writeUserData(userId, name, email, imageUrl) {
     });
 }
 
-/**
- * Initialize the database which keeps all the links
- * For every tile/node, create one record
- * RUN ONLY ONCE
- */
-function initDatabase(tilesNum) {
-    for (let i = 0; i < tilesNum; i++) {
-        firebase.database().ref('links/' + i).set({
-            source: i
-        });
-    }
-    console.log('Database initialized.');
-}
 
 /**
  *  Triggered by every release and combine
@@ -96,6 +83,12 @@ function initDatabase(tilesNum) {
  *  When one link is broken by one user:
  *  1, Remove the user from the supporter list of the 2 tiles;
  *  2, If the user is the last one supporter, remove the link
+ * 
+ * logs:
+ * ++ : add one supporter for the link
+ * -- : reduce one supporter for the link
+ * ++++ : new a link and the current user is the first supporter
+ * ---- : remove a link because the current user is the last supporter
  * @param {*} sourceTileIndex the selected tile's index
  * @param {*} aroundTiles the array of the around tiles after release, whose length <= 4
  */
@@ -128,7 +121,7 @@ function updateLinks(sourceTileIndex, aroundTileIndexes) {
                     lastLinkedIndexes.removeByValue(targetIndexString);
                     // supported by others but not current user, so update the link
                     if (snapshot.child(targetIndexString).val().supporters[currentUName] != true) {
-                        console.log('==' + sourceIndexString + '-' + targetIndexString);
+                        console.log('++' + sourceIndexString + '-' + targetIndexString);
                         let newSupNum = snapshot.child(targetIndexString).val().supNum + 1;
                         let updateLink = {};
                         updateLink['supNum'] = newSupNum;
@@ -136,7 +129,7 @@ function updateLinks(sourceTileIndex, aroundTileIndexes) {
                         sourceRef.child(targetIndexString).update(updateLink);
                     }
                 } else {
-                    console.log('++' + sourceIndexString + '-' + targetIndexString);
+                    console.log('++++' + sourceIndexString + '-' + targetIndexString);
                     // not yet supported by anyone, so new a link
                     sourceRef.child(targetIndexString).set({
                         target: targetTileIndex,
@@ -193,7 +186,7 @@ function updateLinks(sourceTileIndex, aroundTileIndexes) {
             targetRef.once('value', snapshot => {
                 if (snapshot.hasChild(sourceIndexString)) {
                     if (snapshot.child(sourceIndexString).val().supporters[currentUName] != true) {
-                        console.log('==' + targetIndexString + '-' + sourceIndexString);
+                        console.log('++' + targetIndexString + '-' + sourceIndexString);
                         let newSupNum = snapshot.child(sourceIndexString).val().supNum + 1;
                         let updateLink = {};
                         updateLink['supNum'] = newSupNum;
@@ -201,9 +194,9 @@ function updateLinks(sourceTileIndex, aroundTileIndexes) {
                         targetRef.child(sourceIndexString).update(updateLink);
                     }
                 } else {
-                    console.log('++' + targetIndexString + '-' + sourceIndexString);
+                    console.log('++++' + targetIndexString + '-' + sourceIndexString);
                     targetRef.child(sourceIndexString).set({
-                        target: sourceIndexString,
+                        target: sourceTileIndex,
                         supNum: 1,
                         supporters: {
                             [currentUName]: true
