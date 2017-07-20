@@ -70,7 +70,7 @@ function writeUserData(userId, name, email, imageUrl) {
     firebase.database().ref('users/' + userId).set({
         username: name,
         email: email,
-        profile_picture: imageUrl
+        photoURL: imageUrl
     });
 }
 
@@ -351,10 +351,10 @@ function onAuthStateChanged(user) {
         currentUID = user.uid;
         currentUName = user.displayName || (user.email.toString().split('.')[0]);
         splashPage.style.display = 'none';
-        writeUserData(user.uid, user.displayName, user.email, user.photoURL);
+        let photoURL = user.photoURL || '../images/profile_placeholder.png';
+        writeUserData(user.uid, user.displayName, user.email, photoURL);
         userName.textContent = currentUName;
-        // userPic.style.backgroundImage = 'url(' + (user.photoURL || '../images/profile_placeholder.png') + ')';
-        // userPic.src= 'url(' + (user.photoURL || '../images/profile_placeholder.png') +')';
+        userPic.src=  ( user.photoURL || '../images/profile_placeholder.png');
         initTimer();
         // initialize the database which keeps the links
         // initDatabase(64);

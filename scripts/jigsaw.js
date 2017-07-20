@@ -26,32 +26,6 @@ $('.charms').mouseover(function () {
 });
 
 
-// $('.header').hover(
-//     function () {
-//         $('.header').animate({ opacity: 0.75 });
-//     },
-//     function () {
-//         $('.header').animate({ opacity: 0 });
-//     });
-// $('.header').mouseleave(function (){
-//     $('.header').animate({  
-//         //         width : "hide",  
-//         // paddingLeft : "hide",  
-//         // paddingRight : "hide",  
-//         // marginLeft : "hide",  
-//         // marginRight : "hide"  
-//     });
-// });
-
-// $('.header').mouseover(function () {
-//     $('.header').animate({
-//         //         width : "show",  
-//         // paddingLeft : "show",  
-//         // paddingRight : "show",  
-//         // marginLeft : "show",  
-//         // marginRight : "show" 
-//     });
-// });
 
 Array.prototype.remove = function (start, end) {
     this.splice(start, end);
@@ -62,7 +36,7 @@ view.currentScroll = new Point(0, 0);
 var scrollVector = new Point(0, 0);
 var scrollMargin = 32;
 
-$('#puzzle-image').attr('src', 'images/corgi.jpg');
+$('#puzzle-image').attr('src', 'images/cat.jpg');
 
 var imgWidth = $('.puzzle-image').css('width').replace('px', '');
 var imgHeight = $('.puzzle-image').css('height').replace('px', '');
@@ -166,6 +140,7 @@ function JigsawPuzzle(config) {
     this.shadowWidth = config.shadowWidth;
     this.puzzleImage = new Raster(config.imgName);
     this.puzzleImage.position = view.center;
+    
     this.puzzleImage.visible = false;
     this.tileWidth = config.tileWidth;
 
@@ -194,6 +169,9 @@ function JigsawPuzzle(config) {
 
     // keep track of the steps of the current user
     this.steps = 0;
+    
+    var aCircle = new Path.Circle(new Point(0, 0), 10);
+    aCircle.strokeColor = 'red';
 
     function createTiles(xTileCount, yTileCount) {
         var tiles = new Array();
@@ -207,7 +185,7 @@ function JigsawPuzzle(config) {
                 var shape = shapeArray[y * xTileCount + x];
 
                 var mask = getMask(tileRatio, shape.topTab, shape.rightTab, shape.bottomTab, shape.leftTab, instance.tileWidth);
-                mask.opacity = 0.25;
+                mask.opacity = 0.01;
                 mask.strokeColor = '#fff'; //white
 
                 var cloneImg = instance.puzzleImage.clone();
@@ -477,7 +455,7 @@ function JigsawPuzzle(config) {
             // get the tile already placed in the currenct position
             var alreadyPlacedTile = getTileAtCellPosition(cellPosition);
 
-            hasConflict = alreadyPlacedTile;
+            hasConflict = false;
 
             var topTile = getTileAtCellPosition(cellPosition + new Point(0, -1));
             var rightTile = getTileAtCellPosition(cellPosition + new Point(1, 0));

@@ -3,6 +3,7 @@
     background-color: #fff;
     overflow: hidden;   
     margin: 0;
+    
 }
 
 
@@ -14,11 +15,20 @@ h3 {
   /*border:1px dashed #000;*/
 }
 
-canvas
+#canvas
 {
-    overflow: hidden;   
+    overflow: hidden;    
     position: absolute;
+    margin: 20px; 
+    /* top: 10px;
+    right:10px;
+    left:10px; */
+    /* bottom: 10px;  */
+    /* height: 100%;
+    width: 100%;      */
+    border: 2px dashed #000;
 }
+
 
 .puzzle-image
 {
@@ -47,12 +57,11 @@ canvas
     overflow: hidden;   
     position: absolute;
     background: #f0f3f9;
-    top: 10%;
+    left: 20px;
     /*opacity: 0.75;*/
-    right: 0%;
-    height: 625px;
-    width: 96px;  
-    /*display: none;  */
+    bottom: 0%;
+    width: 625px;
+    height: 96px;  
 }
 .help:hover,
 .user.hover,
@@ -66,56 +75,58 @@ canvas
 
 .user
 {
-    right: 0%;
-    top: 50%;
-    margin: -275px 25px 0 0;
+    top: 0%;
+    left: 50%;
+    margin: 25px 0  0 -275px;
     background-size:100% 100%;
 }
 
 .help
 {
-    right: 0%;
-    top: 50%;
-    margin: -175px 25px 0 0;
+    top: 0%;
+    left: 50%;
+    margin:25px 0 0 -175px;
 }
 
 .zoomIn
 {
-    right: 0%;
-    top: 50%;
-    margin: -75px 25px 0 0;
+    top: 0%;
+    left: 50%;
+    margin: 25px 0 0 -75px;
 }
 
 
 .zoomOut
 {
-    right: 0%;
-    top: 50%;
-    margin: 25px 25px 0 0;
+    top: 0%;
+    left: 50%;
+    margin: 25px 0 0 25px;
 }
 
 .restart
 {
-    right: 0%;
-    top: 50%;
-    margin: 125px 25px 0 0;
+    top: 0%;
+    left: 50%;
+    margin: 25px 0 0 125px;
 }
 
 .settings
 {
-    right: 0%;
-    top: 50%;
-    margin: 225px 25px 0 0;
+    top: 0%;
+    left: 50%;
+    margin: 25px 0 0 225px;
 }
 
 .info{
-	position: absolute;
-	left: 20px;
+    position: absolute;
+	right: 20px;
 	bottom: 20px;
-    /*border:1px dashed #000;*/
-    display: inline-block;
+    /* border:1px dashed #000; */
+    display: block;
     background-color:#f0f3f9;
 }
+
+
 
 
 .mdl-switch{
