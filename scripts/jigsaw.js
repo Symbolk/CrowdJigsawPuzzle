@@ -43,7 +43,7 @@ var imgHeight = $('.puzzle-image').css('height').replace('px', '');
 var tileWidth = 64;
 
 var config = ({
-    zoomScaleOnDrag: 1.25,
+    zoomScaleOnDrag: 1.0,
     imgName: 'puzzle-image',
     tileWidth: tileWidth,
     tilesPerRow: Math.ceil(imgWidth / tileWidth), //returns min int >= arg
@@ -90,20 +90,22 @@ $('.puzzle-image').css('margin', '-' + imgHeight / 2 + 'px 0 0 -' + imgWidth / 2
 function onMouseDown(event) {
     switch (event.event.button) {
         case 0: {
+            document.querySelector('#canvas').style.cursor="pointer";            
             puzzle.pickTile();
             break;
         }
         // right click to drag a group of tiles
-        case 2: {
-            puzzle.pickGroup();
-            break;
-        }
+        // case 2: {
+        //     puzzle.pickGroup();
+        //     break;
+        // }
     }
 }
 
 
 function onMouseUp(event) {
     puzzle.releaseTile();
+    document.querySelector('#canvas').style.cursor="auto";    
 }
 
 function onMouseMove(event) {
@@ -117,6 +119,7 @@ function onMouseMove(event) {
 }
 
 function onMouseDrag(event) {
+    document.querySelector('#canvas').style.cursor="pointer";    
     puzzle.dragTile(event.delta);
 }
 

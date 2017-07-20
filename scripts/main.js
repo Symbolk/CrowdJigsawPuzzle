@@ -284,10 +284,8 @@ function recommendTiles(selectedTileIndex, n, tiles) {
             for (let i of topNIndex) {
                 let tile = tiles[Number(i)];
                 tile._style.strokeColor = "#FF0000";
-                tile.scale(1.25);
                 setTimeout(function () {
                     tile._style.strokeColor = "#FFF";
-                    tile.scale(1 / 1.25);
                 }, 3000);
             }
         } else {

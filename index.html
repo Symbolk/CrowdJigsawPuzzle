@@ -72,7 +72,7 @@
         </div>
     </div>
 
-     <div class="info mdl-shadow--8dp">
+    <div class="info mdl-shadow--8dp">
         <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="show_steps">
             <span class="mdl-switch__label"></span>
             <input type="checkbox" id="show_steps" class="mdl-switch__input" checked>
@@ -99,7 +99,7 @@
     </main>
 
     <div class="charms mdl-shadow--8dp">
-            <button type="button" id="show-user" class="user material-icons md-48 mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect">
+        <button type="button" id="show-user" class="user material-icons md-48 mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect">
                 <i class="material-icons" md-56>account_circle</i>
             </button>
         <!--<img width="50" height="50" src="images/user.png" class="user" />-->
@@ -111,18 +111,18 @@
     </div>
 
     <dialog class="mdl-dialog" id="user-profile">
-    <div class="mdl-dialog__content">
-        <p>
-            当前用户
-            <i class="material-icons md-48">account_circle</i>
-        </p>
-        <div id="user-name"></div>
-        <img id='user-pic' src='images/profile_placeholder.png'></img>
-    <div class="mdl-dialog__actions mdl-card--border">
-        <button type="button" class="mdl-button" id="close-button">关闭</button>
-        <button type="button" class="mdl-button" id="sign-out-button">登出</button>
-    </div>
-    </div>
+        <div class="mdl-dialog__content">
+            <p>
+                当前用户
+                <i class="material-icons md-48">account_circle</i>
+            </p>
+            <div id="user-name"></div>
+            <img id='user-pic' src='images/profile_placeholder.png'></img>
+            <div class="mdl-dialog__actions mdl-card--border">
+                <button type="button" class="mdl-button" id="close-button">关闭</button>
+                <button type="button" class="mdl-button" id="sign-out-button">登出</button>
+            </div>
+        </div>
     </dialog>
 
     <div class="solution">
@@ -131,6 +131,12 @@
     </div>
 
     <script type="text/javascript" src="scripts/main.js"></script>
+    <script>
+        var canvas = document.getElementById('canvas');
+        var box = canvas.getBoundingClientRect(); //canvas元素的边界框
+        console.log(canvas.width + "---" + canvas.height); //300-150
+        console.log(box.width + "---" + box.height); //600-300
+    </script>
 </body>
 
 </html>
