@@ -43,7 +43,7 @@ var imgHeight = $('.puzzle-image').css('height').replace('px', '');
 var tileWidth = 64;
 
 var config = ({
-    zoomScaleOnDrag: 1.25,
+    zoomScaleOnDrag: 1.0,
     imgName: 'puzzle-image',
     tileWidth: tileWidth,
     tilesPerRow: Math.ceil(imgWidth / tileWidth), //returns min int >= arg
@@ -94,10 +94,10 @@ function onMouseDown(event) {
             break;
         }
         // right click to drag a group of tiles
-        case 2: {
-            puzzle.pickGroup();
-            break;
-        }
+        // case 2: {
+        //     puzzle.pickGroup();
+        //     break;
+        // }
     }
 }
 
