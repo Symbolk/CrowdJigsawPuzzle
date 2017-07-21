@@ -159,9 +159,10 @@ function updateLinks(sourceTileIndex, aroundTiles) {
                     let targetIndexString = targetIndex.toString();
                     let childRef = sourceRef.child(targetIndexString);
                     let newSupNum = snapshot.child(targetIndexString).val().supNum - 1;
+                    let position = snapshot.child(targetIndexString).val().supporters[currentUName];
                     let newOppNum = snapshot.child(targetIndexString).val().oppNum + 1;
 
-                    console.log('--' + sourceIndexString + '-' + targetIndexString);
+                    console.log('--' + sourceIndexString + '-'+position+'-' + targetIndexString);
                     let updateLink = {};
                     childRef.child('supporters').child(currentUName).remove();
                     updateLink['supNum'] = newSupNum;
@@ -175,7 +176,7 @@ function updateLinks(sourceTileIndex, aroundTiles) {
                         if (snapshot.child(sourceIndexString).child('supporters').hasChild(currentUName)) {
                             let newSupNum = snapshot.child(sourceIndexString).val().supNum - 1;
                             let newOppNum = snapshot.child(sourceIndexString).val().oppNum + 1;
-                            console.log('--' + targetIndexString + '-' + sourceIndexString);
+                            console.log('--' + targetIndexString + '-' +position+'-'+ sourceIndexString);
                             let updateLink = {};
                             childRef.child('supporters').child(currentUName).remove();
                             updateLink['supNum'] = newSupNum;
@@ -296,7 +297,12 @@ function removeLinks(sourceTileIndex) {
 }
 
 /**
- * Recommend 1~4 tiles for the current user
+ * Recommend 1~4 tiles for the current user 
+ * Current recommendation algorithm:
+ * 1, get the selected tile's link list
+ * 2, order the link list by supNum
+ * 3, for the top n links, get their most possible directions from the supporters list
+ * 4, attach the recommended tiles to the selected tile
  * @param {*} selectedTileIndex 
  * @param {*} n 
  */
@@ -314,6 +320,7 @@ function recommendTiles(selectedTileIndex, n, tiles) {
     }).then(function () {
         if (topNIndex.length > 0) {
             for (let i of topNIndex) {
+                
                 let tile = tiles[Number(i)];
                 tile._style.strokeColor = "#FF0000";
                 setTimeout(function () {

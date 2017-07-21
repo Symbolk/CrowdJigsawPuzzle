@@ -1,17 +1,17 @@
 
 // auto hide and show some components when the user switch focus between workspace and sidespace
 $('.charms, .title, .info, .progress-bar').mouseleave(function () {
-    $('.charms').animate( {opacity: 0 });
+    $('.charms').animate({ opacity: 0 });
     $('.title').animate({ opacity: 0 });
     $('.info').animate({ opacity: 0 });
-    $('.progress-bar').animate({ opacity: 0 });    
+    $('.progress-bar').animate({ opacity: 0 });
 });
 
 $('.charms, .title, .info, .progress-bar').mouseover(function () {
     $('.charms').animate({ opacity: 1.0 });
     $('.title').animate({ opacity: 1.0 });
     $('.info').animate({ opacity: 1.0 });
-    $('.progress-bar').animate({ opacity: 1.0 });    
+    $('.progress-bar').animate({ opacity: 1.0 });
 });
 
 
@@ -166,9 +166,6 @@ function JigsawPuzzle(config) {
     // keep track of the steps of the current user
     this.steps = 0;
 
-    var aCircle = new Path.Circle(new Point(0, 0), 10);
-    aCircle.strokeColor = 'red';
-
     function createTiles(xTileCount, yTileCount) {
         var tiles = new Array();
         var tileRatio = instance.tileWidth / 100.0;
@@ -230,8 +227,8 @@ function JigsawPuzzle(config) {
                     Math.round(position.x / instance.tileWidth) + 1,//returns int closest to arg
                     Math.round(position.y / instance.tileWidth) + 1);
 
-                tile.position = cellPosition * instance.tileWidth;
-                tile.cellPosition = cellPosition;
+                tile.position = cellPosition * instance.tileWidth; // round position
+                tile.cellPosition = cellPosition; // cell position
             }
         }
 
@@ -404,6 +401,7 @@ function JigsawPuzzle(config) {
 
     this.pickTile = function () {
         if (instance.selectedTile) {
+
             if (!instance.selectedTile.lastScale) {
                 instance.selectedTile.lastScale = instance.zoomScaleOnDrag;
                 instance.selectedTile.scale(instance.selectedTile.lastScale);
@@ -419,7 +417,7 @@ function JigsawPuzzle(config) {
             instance.selectionGroup = new Group(instance.selectedTile);
 
             var pos = new Point(instance.selectedTile.position.x, instance.selectedTile.position.y);
-            instance.selectedTile.position = new Point(0, 0);
+            // instance.selectedTile.position = new Point(0, 0);
             // the index of the tile
             console.log('@ ' + instance.selectedTileIndex);
             // console.log(instance.selectedTile.findex);
@@ -429,31 +427,16 @@ function JigsawPuzzle(config) {
             // returns an array with length <= topN
             recommendTiles(instance.selectedTileIndex, topN, instance.tiles);
 
-            // SIMULATION :highlight 2 random tiles
-            // var r1 = parseInt(Math.random() * instance.tileNum, 10);
-            // var r2 = parseInt(Math.random() * instance.tileNum, 10);
-
-            // var t1 = instance.tiles[r1];
-            // var t2 = instance.tiles[r2];
-            // t1.strokeColor = "#FF0000";
-            // t2.strokeColor = "#FF0000";
-            // t1.scale(instance.zoomScaleOnDrag);
-            // t2.scale(instance.zoomScaleOnDrag);
-            // // disappear after 2000 ms
-            // setTimeout(function () {
-            //     t1.strokeColor = "#FFF";
-            //     t2.strokeColor = "#FFF";
-            //     t1.scale(1.0 / instance.zoomScaleOnDrag);
-            //     t2.scale(1.0 / instance.zoomScaleOnDrag);
-            // }, 1000);
         }
     }
 
     this.releaseTile = function () {
         if (instance.selectedTile) {
+            // the release position
             var cellPosition = new Point(
                 Math.round(instance.selectionGroup.position.x / instance.tileWidth),
                 Math.round(instance.selectionGroup.position.y / instance.tileWidth));
+
 
             var roundPosition = cellPosition * instance.tileWidth;
 
@@ -463,7 +446,7 @@ function JigsawPuzzle(config) {
             // get the tile already placed in the currenct position
             var alreadyPlacedTile = getTileAtCellPosition(cellPosition);
 
-            hasConflict = false;
+            hasConflict = alreadyPlacedTile;
 
             var topTile = getTileAtCellPosition(cellPosition + new Point(0, -1));
             var rightTile = getTileAtCellPosition(cellPosition + new Point(1, 0));
@@ -505,9 +488,9 @@ function JigsawPuzzle(config) {
                 });
             }
 
+
             // current no tile&&4 sides no conficts, a successful release
             // fitted(has tiles around it)
-
             if (!hasConflict) {
                 // if the released tile has tiles around but no conflict
                 if (aroundTiles.length > 0) {
@@ -536,7 +519,6 @@ function JigsawPuzzle(config) {
 
                 instance.selectionGroup.remove();
 
-
                 var tile = instance.tiles[instance.selectedTileIndex];
                 tile.position = roundPosition;
                 tile.cellPosition = cellPosition;
@@ -550,6 +532,17 @@ function JigsawPuzzle(config) {
                 if (errors == 0) {
                     alert('Congratulations!!!');
                 }
+            } else {
+                // if the cell already has tile in it, just switch the 2 tiles
+                alreadyPlacedTile.position = instance.selectedTile.position;
+                alreadyPlacedTile.cellPosition = instance.selectedTile.position / instance.tileWidth;
+                var tile = instance.tiles[instance.selectedTileIndex];
+                tile.position = roundPosition;
+                tile.cellPosition = cellPosition;
+                instance.selectionGroup.remove();
+                instance.selectedTile = instance.selectionGroup = null;
+                project.activeLayer.addChild(tile);
+
             }
         }
     }
