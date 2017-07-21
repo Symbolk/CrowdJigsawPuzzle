@@ -6,6 +6,7 @@ const signUpEmail = document.querySelector('#sign-up-email');
 const signInGoogle = document.querySelector('#sign-in-google');
 const psResetButton = document.querySelector('#reset-password');
 const userPic = document.querySelector('#user-pic');
+const userPicThumb = document.querySelector('.user');
 const userName = document.querySelector('#user-name');
 
 var percentage = 30;
@@ -380,10 +381,12 @@ function onAuthStateChanged(user) {
         currentUID = user.uid;
         currentUName = user.displayName || (user.email.toString().split('.')[0]);
         splashPage.style.display = 'none';
-        let photoURL = user.photoURL || '../images/profile_placeholder.png';
+        let defaultPic = 'http://i2.kiimg.com/1949/e9cc5a57bd8d22fd.png';
+        let photoURL = user.photoURL || defaultPic;
         writeUserData(user.uid, user.displayName, user.email, photoURL);
         userName.textContent = currentUName;
-        userPic.src = (user.photoURL || '../images/profile_placeholder.png');
+        userPic.src = (user.photoURL || defaultPic);
+        userPicThumb.src = (user.photoURL || defaultPic);      
         initTimer();
         // initialize the database which keeps the links
         // initDatabase(64);

@@ -52,12 +52,12 @@ h3 {
 
 #progress{
     position: absolute;
-    left: 665px;
+    left: 765px;
     bottom: 48px;
 }
 #percentage{
     position: absolute;
-    right: 220px;
+    left: 700px;
     bottom: 32px;
 }
 
@@ -87,7 +87,7 @@ h3 {
     top: 0%;
     left: 50%;
     margin: 25px 0  0 -275px;
-    background-size:100% 100%;
+    background-size:100% 100%;  
 }
 
 .help
