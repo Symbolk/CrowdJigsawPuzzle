@@ -110,33 +110,41 @@
         <img width="50" height="50" src="images/settings.png" class="settings" />
     </div>
 
-    <dialog class="mdl-dialog" id="user-profile">
-        <div class="mdl-dialog__content">
-            <p>
-                当前用户
-                <i class="material-icons md-48">account_circle</i>
-            </p>
-            <div id="user-name"></div>
-            <img id='user-pic' src='images/profile_placeholder.png'></img>
-            <div class="mdl-dialog__actions mdl-card--border">
-                <button type="button" class="mdl-button" id="close-button">关闭</button>
-                <button type="button" class="mdl-button" id="sign-out-button">登出</button>
+    <div class="progress-bar">
+        <div id="progress" class="mdl-progress mdl-js-progress">
             </div>
-        </div>
-    </dialog>
-
-    <div class="solution">
-        <img width="512" height="512" id="puzzle-image" class="puzzle-image" style="display: none;" src="images/cat.jpg" />
-        <img width="128" height="128" id="empty" style="display: none;" src="images/empty.png" />
+        <button id="percentage" type="button" class="mdl-chip">
+            <span class="mdl-chip__text">30%</span>
+        </button>
     </div>
 
-    <script type="text/javascript" src="scripts/main.js"></script>
-    <script>
+        <dialog class="mdl-dialog" id="user-profile">
+            <div class="mdl-dialog__content">
+                <p>
+                    当前用户
+                    <i class="material-icons md-48">account_circle</i>
+                </p>
+                <div id="user-name"></div>
+                <img id='user-pic' src='images/profile_placeholder.png'></img>
+                <div class="mdl-dialog__actions mdl-card--border">
+                    <button type="button" class="mdl-button" id="close-button">关闭</button>
+                    <button type="button" class="mdl-button" id="sign-out-button">登出</button>
+                </div>
+            </div>
+        </dialog>
+
+        <div class="solution">
+            <img width="512" height="512" id="puzzle-image" class="puzzle-image" style="display: none;" src="images/cat.jpg" />
+            <img width="128" height="128" id="empty" style="display: none;" src="images/empty.png" />
+        </div>
+
+        <script type="text/javascript" src="scripts/main.js"></script>
+        <!-- <script>
         var canvas = document.getElementById('canvas');
         var box = canvas.getBoundingClientRect(); //canvas元素的边界框
         console.log(canvas.width + "---" + canvas.height); //300-150
         console.log(box.width + "---" + box.height); //600-300
-    </script>
+    </script> -->
 </body>
 
 </html>

@@ -1,28 +1,17 @@
 
-// auto hide and show some elements
-$('.charms').mouseleave(function () {
-    $('.charms').animate({
-        // width : "hide",  
-        // paddingLeft : "hide",  
-        // paddingRight : "hide",  
-        // marginLeft : "hide",  
-        // marginRight : "hide"  
-        opacity: 0
-    });
+// auto hide and show some components when the user switch focus between workspace and sidespace
+$('.charms, .title, .info, .progress-bar').mouseleave(function () {
+    $('.charms').animate( {opacity: 0 });
     $('.title').animate({ opacity: 0 });
-    $('.info').animate({ opacity: 0 });    
+    $('.info').animate({ opacity: 0 });
+    $('.progress-bar').animate({ opacity: 0 });    
 });
-$('.charms').mouseover(function () {
-    $('.charms').animate({
-        // width : "show",  
-        // paddingLeft : "show",  
-        // paddingRight : "show",  
-        // marginLeft : "show",  
-        // marginRight : "show" 
-        opacity: 0.75
-    });
-    $('.title').animate({ opacity: 0.75 });
-    $('.info').animate({ opacity: 0.75 });
+
+$('.charms, .title, .info, .progress-bar').mouseover(function () {
+    $('.charms').animate({ opacity: 1.0 });
+    $('.title').animate({ opacity: 1.0 });
+    $('.info').animate({ opacity: 1.0 });
+    $('.progress-bar').animate({ opacity: 1.0 });    
 });
 
 
@@ -45,12 +34,13 @@ var tileWidth = 64;
 var config = ({
     zoomScaleOnDrag: 1.0,
     imgName: 'puzzle-image',
+    tileShape: 'straight', // curved or straight
     tileWidth: tileWidth,
     tilesPerRow: Math.ceil(imgWidth / tileWidth), //returns min int >= arg
     tilesPerColumn: Math.ceil(imgHeight / tileWidth),
     imgWidth: imgWidth,
     imgHeight: imgHeight,
-    shadowWidth: 120
+    shadowWidth: 120,
 });
 
 var puzzle = new JigsawPuzzle(config);
@@ -90,7 +80,7 @@ $('.puzzle-image').css('margin', '-' + imgHeight / 2 + 'px 0 0 -' + imgWidth / 2
 function onMouseDown(event) {
     switch (event.event.button) {
         case 0: {
-            document.querySelector('#canvas').style.cursor="pointer";            
+            document.querySelector('#canvas').style.cursor = "pointer";
             puzzle.pickTile();
             break;
         }
@@ -105,7 +95,7 @@ function onMouseDown(event) {
 
 function onMouseUp(event) {
     puzzle.releaseTile();
-    document.querySelector('#canvas').style.cursor="auto";    
+    document.querySelector('#canvas').style.cursor = "auto";
 }
 
 function onMouseMove(event) {
@@ -119,7 +109,7 @@ function onMouseMove(event) {
 }
 
 function onMouseDrag(event) {
-    document.querySelector('#canvas').style.cursor="pointer";    
+    document.querySelector('#canvas').style.cursor = "pointer";
     puzzle.dragTile(event.delta);
 }
 
@@ -137,13 +127,15 @@ function onKeyUp(event) {
 
 function JigsawPuzzle(config) {
     instance = this; // the current object(which calls the function)
+    this.tileShape = config.tileShape;
+
     this.currentZoom = 1;
     this.zoomScaleOnDrag = config.zoomScaleOnDrag;
     this.imgName = config.imgName;
     this.shadowWidth = config.shadowWidth;
     this.puzzleImage = new Raster(config.imgName);
     this.puzzleImage.position = view.center;
-    
+
     this.puzzleImage.visible = false;
     this.tileWidth = config.tileWidth;
 
@@ -155,9 +147,9 @@ function JigsawPuzzle(config) {
     console.log("Game started : " + this.tileNum + " tiles(" + this.tilesPerRow + " rows * " + this.tilesPerColumn + " cols)");
 
     // SIMULATION CODE
-    var tmp=[1,2,3];
-    var tmp2=[1,3,5,8];
-    var tmp3=[1,3,5,7];    
+    var tmp = [1, 2, 3];
+    var tmp2 = [1, 3, 5, 8];
+    var tmp3 = [1, 3, 5, 7];
     // updateLinks(0, tmp); // symbolk@qq    
     // updateLinks(0, tmp3); // symbolk@163
 
@@ -170,9 +162,10 @@ function JigsawPuzzle(config) {
     this.shadowScale = 1.5;
     this.tiles = createTiles(this.tilesPerRow, this.tilesPerColumn);
 
+
     // keep track of the steps of the current user
     this.steps = 0;
-    
+
     var aCircle = new Path.Circle(new Point(0, 0), 10);
     aCircle.strokeColor = 'red';
 
@@ -312,7 +305,19 @@ function JigsawPuzzle(config) {
 
     function getRandomTabValue() {
         //math.floor() returns max int <= arg
-        return Math.pow(-1, Math.floor(Math.random() * 2));
+        switch (this.tileShape) {
+            case 'straight': {
+                return 0;
+                break;
+            }
+            case 'curved': {
+                return Math.pow(-1, Math.floor(Math.random() * 2));
+                break;
+            }
+            default: {
+                return 0;
+            }
+        }
     }
 
     function getMask(tileRatio, topTab, rightTab, bottomTab, leftTab, tileWidth) {
@@ -416,7 +421,7 @@ function JigsawPuzzle(config) {
             var pos = new Point(instance.selectedTile.position.x, instance.selectedTile.position.y);
             instance.selectedTile.position = new Point(0, 0);
             // the index of the tile
-            console.log('Tile selected : ' + instance.selectedTileIndex);
+            console.log('@ ' + instance.selectedTileIndex);
             // console.log(instance.selectedTile.findex);
             instance.selectionGroup.position = pos;
 
@@ -467,24 +472,37 @@ function JigsawPuzzle(config) {
 
             // check if tiles around(if exists) fit in the tab
             // if there exists the top tile
+            // position means that: start from the selected tile, walk one step in the direction
             if (topTile) {
                 hasConflict = hasConflict || !(topTile.shape.bottomTab + instance.selectedTile.shape.topTab == 0);
-                aroundTiles.push(topTile);
+                aroundTiles.push({
+                    tile: topTile,
+                    position: 'T'
+                });
             }
 
             if (bottomTile) {
                 hasConflict = hasConflict || !(bottomTile.shape.topTab + instance.selectedTile.shape.bottomTab == 0);
-                aroundTiles.push(bottomTile);
+                aroundTiles.push({
+                    tile: bottomTile,
+                    position: 'B'
+                });
             }
 
             if (rightTile) {
                 hasConflict = hasConflict || !(rightTile.shape.leftTab + instance.selectedTile.shape.rightTab == 0);
-                aroundTiles.push(rightTile);
+                aroundTiles.push({
+                    tile: rightTile,
+                    position: 'R'
+                });
             }
 
             if (leftTile) {
                 hasConflict = hasConflict || !(leftTile.shape.rightTab + instance.selectedTile.shape.leftTab == 0);
-                aroundTiles.push(leftTile);
+                aroundTiles.push({
+                    tile: leftTile,
+                    position: 'L'
+                });
             }
 
             // current no tile&&4 sides no conficts, a successful release
@@ -492,14 +510,12 @@ function JigsawPuzzle(config) {
 
             if (!hasConflict) {
                 // if the released tile has tiles around but no conflict
-                var aroundTileIndexes = new Array();
                 if (aroundTiles.length > 0) {
                     // release and combine
-                    for (var i = 0; i < aroundTiles.length; i++) {
-                        aroundTileIndexes.push(aroundTiles[i].findex);
-                        console.log("Tiles linked : " + instance.selectedTileIndex + '-' + aroundTiles[i].findex);
-                    }
-                    updateLinks(instance.selectedTileIndex, aroundTileIndexes);
+                    // for (var i = 0; i < aroundTiles.length; i++) {
+                    //     console.log("Linked : " + instance.selectedTileIndex + '-' +aroundTiles[i].position + '-' + aroundTiles[i].tile.findex);
+                    // }
+                    updateLinks(instance.selectedTileIndex, aroundTiles);
                 } else if (aroundTiles.length === 0) {
                     // isolated
                     removeLinks(instance.selectedTileIndex);// to be done
@@ -530,6 +546,7 @@ function JigsawPuzzle(config) {
 
                 // check num of errors every release
                 var errors = checkTiles();
+
                 if (errors == 0) {
                     alert('Congratulations!!!');
                 }
@@ -607,6 +624,9 @@ function JigsawPuzzle(config) {
         }
     }
 
+    /**
+     * Only checks the global errors, local 
+     */
     function checkTiles() {
         var errors = 0;
         var firstTile = instance.tiles[0];
@@ -622,7 +642,6 @@ function JigsawPuzzle(config) {
                 }
             }
         }
-        //console.log(errors);
         return errors;
     }
 }
