@@ -40,11 +40,11 @@ Requirements :
 
 2, Register an account with Email address and passwword; If you want to manage your account, you must verify your email.
 
-![SignIn](https://github.com/Symbolk/CrowdJigsawPuzzle/tree/jigsawdev/screenshots/signin.jpg)
+![SignIn](https://github.com/Symbolk/CrowdJigsawPuzzle/blob/master/screenshots/signin.jpg)
 
 3, Click "Start Game" to play with a puzzle.
 
-![Puzzle](https://github.com/Symbolk/CrowdJigsawPuzzle/tree/jigsawdev/screenshots/puzzle.jpg)
+![Puzzle](https://github.com/Symbolk/CrowdJigsawPuzzle/blob/master/screenshots/puzzle.jpg)
 
 
 ## Run it Locally!
@@ -62,11 +62,11 @@ firebase login
 ```
 3, Create a web app in your Firebase console, and enable Email/Password login:
 
-![Enable](https://github.com/Symbolk/CrowdJigsawPuzzle/tree/jigsawdev/screenshots/enable.png) 
+![Enable](https://github.com/Symbolk/CrowdJigsawPuzzle/blob/master/screenshots/enable.png) 
 
 4, Config your app : switch to Console/Overview, copy the code inside <script></script> to scripts/config.js(remember to rename config_template.js):
 
-![Config](https://github.com/Symbolk/CrowdJigsawPuzzle/tree/jigsawdev/screenshots/config.png)
+![Config](https://github.com/Symbolk/CrowdJigsawPuzzle/blob/master/screenshots/config.png)
 
 5, Link the app to Firebase:
 ```sh
