@@ -15,7 +15,6 @@ $('.charms, .title, .info, .progress-bar').mouseover(function () {
 });
 
 
-
 Array.prototype.remove = function (start, end) {
     this.splice(start, end);
     return this;
@@ -43,8 +42,12 @@ var config = ({
     shadowWidth: 120,
 });
 
+
+/**
+ * Start building the puzzle
+ */
 var puzzle = new JigsawPuzzle(config);
-puzzle.zoom(-.3);
+puzzle.zoom(-.1);
 var path;
 var movePath = false;
 
@@ -69,9 +72,59 @@ $('.help').mousedown(function () {
     }
 });
 
+/**
+ * click the settings button and show the puzzle settings
+ */
+(function () {
+    var showButton = document.querySelector('#show-settings');
+    var dialog = document.querySelector('#settings');
+    var cancelButton = document.querySelector('#cancel-button');
+    var applyButton = document.querySelector('#apply-button');
+
+    if (!dialog.showModal) {
+        dialogPolyfill.registerDialog(dialog);
+    }
+
+    cancelButton.addEventListener('click', function (event) {
+        dialog.close();
+    });
+
+    showButton.addEventListener('click', function (event) {
+        dialog.showModal();
+    });
+
+    /**
+     * NOT working: snapshot remained
+     */
+    applyButton.addEventListener('click', function (event) {
+        if (document.querySelector('#option-1').checked === true) {
+            console.log('Level 1');
+            config.tileShape = 'straight';
+            var c = document.querySelector("#canvas");
+            var cxt = c.getContext("2d");
+            cxt.fillStyle = "white";
+            puzzle = new JigsawPuzzle(config);
+
+        } else {
+            console.log('Level 2');
+            config.tileShape = 'curved';
+            var c = document.querySelector("#canvas");
+            var cxt = c.getContext("2d");
+            cxt.fillStyle = "red";
+            console.log(cxt);
+            cxt.clearRect(0, 0, c.width, c.height);
+            instance.tiles.splice(0, instance.tiles.length);
+            // puzzle = new JigsawPuzzle(config);       
+        }
+        dialog.close();
+    });
+}());
+
+
 $('.restart').click(function () {
     // document.execCommand('Refresh');
     window.location.reload();
+    // var puzzle = new JigsawPuzzle(config);
 });
 
 var charmsWidth = $('.charms').css('width').replace('px', '');
@@ -80,22 +133,27 @@ $('.puzzle-image').css('margin', '-' + imgHeight / 2 + 'px 0 0 -' + imgWidth / 2
 function onMouseDown(event) {
     switch (event.event.button) {
         case 0: {
-            document.querySelector('#canvas').style.cursor = "pointer";
             puzzle.pickTile();
             break;
         }
         // right click to drag a group of tiles
-        // case 2: {
-        //     puzzle.pickGroup();
-        //     break;
-        // }
+        case 2: {
+            puzzle.showRecommendTiles();
+            break;
+        }
     }
 }
 
 
+
 function onMouseUp(event) {
-    puzzle.releaseTile();
-    document.querySelector('#canvas').style.cursor = "auto";
+    // restrict to the left click
+    switch (event.event.button) {
+        case 0: {
+            puzzle.releaseTile();
+            break;
+        }
+    }
 }
 
 function onMouseMove(event) {
@@ -109,8 +167,12 @@ function onMouseMove(event) {
 }
 
 function onMouseDrag(event) {
-    document.querySelector('#canvas').style.cursor = "pointer";
-    puzzle.dragTile(event.delta);
+    switch (event.event.button) {
+        case 0: {
+            puzzle.dragTile(event.delta);
+            break;
+        }
+    }
 }
 
 function onKeyUp(event) {
@@ -146,22 +208,12 @@ function JigsawPuzzle(config) {
     // output some info about this puzzle
     console.log("Game started : " + this.tileNum + " tiles(" + this.tilesPerRow + " rows * " + this.tilesPerColumn + " cols)");
 
-    // SIMULATION CODE
-    var tmp = [1, 2, 3];
-    var tmp2 = [1, 3, 5, 8];
-    var tmp3 = [1, 3, 5, 7];
-    // updateLinks(0, tmp); // symbolk@qq    
-    // updateLinks(0, tmp3); // symbolk@163
-
-    // removeLinks(0);
-
     this.tileMarginWidth = this.tileWidth * 0.203125;
     this.selectedTile = undefined;
     this.selectedTileIndex = undefined;
     this.selectionGroup = undefined;
     this.shadowScale = 1.5;
     this.tiles = createTiles(this.tilesPerRow, this.tilesPerColumn);
-
 
     // keep track of the steps of the current user
     this.steps = 0;
@@ -302,7 +354,7 @@ function JigsawPuzzle(config) {
 
     function getRandomTabValue() {
         //math.floor() returns max int <= arg
-        switch (this.tileShape) {
+        switch (instance.tileShape) {
             case 'straight': {
                 return 0;
                 break;
@@ -394,11 +446,6 @@ function JigsawPuzzle(config) {
         return targetRaster;
     }
 
-    this.pickGroup = function () {
-        // get the around tiles
-
-    }
-
     this.pickTile = function () {
         if (instance.selectedTile) {
 
@@ -422,11 +469,12 @@ function JigsawPuzzle(config) {
             console.log('@ ' + instance.selectedTileIndex);
             // console.log(instance.selectedTile.findex);
             instance.selectionGroup.position = pos;
+        }
+    }
 
-            var topN = 2;
-            // returns an array with length <= topN
-            recommendTiles(instance.selectedTileIndex, topN, instance.tiles);
-
+    this.showRecommendTiles =function(){
+        if(instance.selectedTile){
+            showHints(instance.selectedTileIndex, 4);            
         }
     }
 
@@ -639,3 +687,48 @@ function JigsawPuzzle(config) {
     }
 }
 
+
+/**
+ * Move the recommended tiles into the hint box, and move them back when the user "focus" on another tile
+ * Called in recommendTiles() then()
+ * @param {*} selectedTileIndex 
+ * @param {*} n 
+ */
+function showHints(selectedTileIndex, n) {
+    getHints(selectedTileIndex, n).then(function (results) {
+        console.log('in showHints');
+        console.dir(results);
+        console.log(results[0]);
+
+        for (var key in results) {
+            if (results.hasOwnProperty(key)) {
+                var element = results[key];
+                console.log(key);
+            }
+        }
+        // if we can get the recommend tile indexes and positions
+        var res = [
+            {
+                index: '0',
+                position: 'R'
+            },
+            {
+                index: '1',
+                position: 'T'
+            }
+        ];
+        // move the recommended tiles to the hint area
+        for (var i = 0; i < res.length; i++) {
+            var r = res[i];
+            var tile = instance.tiles[r['index']];
+            var lastPosition = tile.position;
+            var lastCellPosition = tile.lastCellPosition;
+            tile.cellPosition = new Point(0, i*2);
+            tile.position = tile.cellPosition * instance.tileWidth;
+        }
+        // move them back after the user focus on another tile
+        
+    }).catch(function () {
+        console.log('No recommendations.');
+    });
+}

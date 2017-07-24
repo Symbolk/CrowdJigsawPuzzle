@@ -9,6 +9,8 @@ const userPic = document.querySelector('#user-pic');
 const userPicThumb = document.querySelector('.user');
 const userName = document.querySelector('#user-name');
 
+
+//SIMULATION
 var percentage = 30;
 document.querySelector('#progress').addEventListener('mdl-componentupgraded', function () {
     this.MaterialProgress.setProgress(percentage);
@@ -20,7 +22,7 @@ var listeningFirebaseRefs = [];
 var currentUID; // firebase.auth().currentUser.uid;
 var currentUName;
 /**
- * click the user charm and show the user profile
+ * click the user icon and show the user profile
  */
 (function () {
     let showButton = document.querySelector('#show-user');
@@ -45,6 +47,7 @@ var currentUName;
         dialog.close();
     });
 }());
+
 
 
 /**
@@ -102,6 +105,7 @@ function writeUserData(userId, name, email, imageUrl) {
 function updateLinks(sourceTileIndex, aroundTiles) {
     // get the around tiles BEFORE release
     let sourceRef = firebase.database().ref('links/' + sourceTileIndex);
+    listeningFirebaseRefs.push(sourceRef);
     // linked indexes before this release, whose length <= 4
     let sourceIndexString = sourceTileIndex.toString();
     let lastLinkedIndexes = new Array();
@@ -132,10 +136,10 @@ function updateLinks(sourceTileIndex, aroundTiles) {
                         let updateLink = {};
                         updateLink['supNum'] = newSupNum;
                         updateLink['supporters/' + currentUName] = position;
-                        if(snapshot.child(targetIndexString).child('opposers').hasChild(currentUName)){
-                            let newOppNum = snapshot.child(targetIndexString).val().oppNum - 1;                        
-                            sourceRef.child(targetIndexString).child('opposers').child(currentUName).remove();                        
-                            updateLink['oppNum']=newOppNum;
+                        if (snapshot.child(targetIndexString).child('opposers').hasChild(currentUName)) {
+                            let newOppNum = snapshot.child(targetIndexString).val().oppNum - 1;
+                            sourceRef.child(targetIndexString).child('opposers').child(currentUName).remove();
+                            updateLink['oppNum'] = newOppNum;
                         }
                         sourceRef.child(targetIndexString).update(updateLink);
                     }
@@ -158,11 +162,12 @@ function updateLinks(sourceTileIndex, aroundTiles) {
                 for (let targetIndex of lastLinkedIndexes) {
                     let targetIndexString = targetIndex.toString();
                     let childRef = sourceRef.child(targetIndexString);
+                    listeningFirebaseRefs.push(childRef);
                     let newSupNum = snapshot.child(targetIndexString).val().supNum - 1;
                     let position = snapshot.child(targetIndexString).val().supporters[currentUName];
                     let newOppNum = snapshot.child(targetIndexString).val().oppNum + 1;
 
-                    console.log('--' + sourceIndexString + '-'+position+'-' + targetIndexString);
+                    console.log('--' + sourceIndexString + '-' + position + '-' + targetIndexString);
                     let updateLink = {};
                     childRef.child('supporters').child(currentUName).remove();
                     updateLink['supNum'] = newSupNum;
@@ -171,12 +176,14 @@ function updateLinks(sourceTileIndex, aroundTiles) {
                     childRef.update(updateLink);
 
                     let targetRef = firebase.database().ref('links/' + targetIndexString);
+                    listeningFirebaseRefs.push(targetRef);
                     targetRef.once('value').then(snapshot => {
                         let childRef = targetRef.child(sourceIndexString);
+                        listeningFirebaseRefs.push(childRef);
                         if (snapshot.child(sourceIndexString).child('supporters').hasChild(currentUName)) {
                             let newSupNum = snapshot.child(sourceIndexString).val().supNum - 1;
                             let newOppNum = snapshot.child(sourceIndexString).val().oppNum + 1;
-                            console.log('--' + targetIndexString + '-' +position+'-'+ sourceIndexString);
+                            console.log('--' + targetIndexString + '-' + position + '-' + sourceIndexString);
                             let updateLink = {};
                             childRef.child('supporters').child(currentUName).remove();
                             updateLink['supNum'] = newSupNum;
@@ -213,6 +220,7 @@ function updateLinks(sourceTileIndex, aroundTiles) {
 
             let targetIndexString = targetIndex.toString();
             let targetRef = firebase.database().ref('links/' + targetIndexString);
+            listeningFirebaseRefs.push(targetRef);
             targetRef.once('value', snapshot => {
                 if (snapshot.hasChild(sourceIndexString)) {
                     if (!snapshot.child(sourceIndexString).child('supporters').hasChild(currentUName)) {
@@ -221,10 +229,10 @@ function updateLinks(sourceTileIndex, aroundTiles) {
                         let updateLink = {};
                         updateLink['supNum'] = newSupNum;
                         updateLink['supporters/' + currentUName] = position;
-                        if(snapshot.child(sourceIndexString).child('opposers').hasChild(currentUName)){
-                            let newOppNum = snapshot.child(sourceIndexString).val().oppNum - 1;                            
-                            targetRef.child(sourceIndexString).child('opposers').child(currentUName).remove();   
-                            updateLink['oppNum']=newOppNum;
+                        if (snapshot.child(sourceIndexString).child('opposers').hasChild(currentUName)) {
+                            let newOppNum = snapshot.child(sourceIndexString).val().oppNum - 1;
+                            targetRef.child(sourceIndexString).child('opposers').child(currentUName).remove();
+                            updateLink['oppNum'] = newOppNum;
                         }
                         targetRef.child(sourceIndexString).update(updateLink);
                     }
@@ -255,6 +263,7 @@ function updateLinks(sourceTileIndex, aroundTiles) {
 function removeLinks(sourceTileIndex) {
     // get the around tiles BEFORE release
     let sourceRef = firebase.database().ref('links/' + sourceTileIndex);
+    listeningFirebaseRefs.push(sourceRef);
     sourceRef.once('value').then(snapshot => {
         snapshot.forEach(childSnapshot => {
             let targetIndex = childSnapshot.key;
@@ -264,6 +273,7 @@ function removeLinks(sourceTileIndex) {
                     // remove and upade the links around the current tile
                     sourceRef.once('value').then(snapshot => {
                         let childRef = sourceRef.child(targetIndex);
+                        listeningFirebaseRefs.push(childRef);
                         let newSupNum = snapshot.child(targetIndex).val().supNum - 1;
                         let position = snapshot.child(targetIndex).val().supporters[currentUName];
                         let newOppNum = snapshot.child(targetIndex).val().oppNum + 1;
@@ -276,6 +286,7 @@ function removeLinks(sourceTileIndex) {
                     });
                     // also update the links from the current tile to the target tiles
                     let targetRef = firebase.database().ref('links/' + targetIndex);
+                    listeningFirebaseRefs.push(targetRef);
                     targetRef.once('value').then(snapshot => {
                         let childRef = targetRef.child(sourceTileIndex);
                         if (snapshot.child(sourceTileIndex).child('supporters').hasChild(currentUName)) {
@@ -306,31 +317,39 @@ function removeLinks(sourceTileIndex) {
  * @param {*} selectedTileIndex 
  * @param {*} n 
  */
-function recommendTiles(selectedTileIndex, n, tiles) {
+
+function getHints(selectedTileIndex, n) {
     let topTilesRef = firebase.database().ref('links/' + selectedTileIndex).orderByChild('supNum');// ascending order     
     let topNTilesRef = topTilesRef.limitToLast(n);
-    let topNIndex = new Array();
-    topNTilesRef.once('value').then(snapshot => {
-        // console.log(snapshot.val());
-        snapshot.forEach(childSnapshot => {
-            if (!isNaN(childSnapshot.key)) {
-                topNIndex.push(childSnapshot.key);
-            }
+    listeningFirebaseRefs.push(topTilesRef);
+    listeningFirebaseRefs.push(topNTilesRef);
+    // console.trace();
+    return new Promise((resolve, reject) => {
+        let results = new Array();
+        console.log('in getHints');
+        topNTilesRef.once('value').then(snapshot => {
+            // console.log(snapshot.val());
+            snapshot.forEach(childSnapshot => {
+                results.push({
+                    index : childSnapshot.key,
+                    position : 'R'
+                });
+            });
         });
-    }).then(function () {
-        if (topNIndex.length > 0) {
-            for (let i of topNIndex) {
-                
-                let tile = tiles[Number(i)];
-                tile._style.strokeColor = "#FF0000";
-                setTimeout(function () {
-                    tile._style.strokeColor = "#FFF";
-                }, 3000);
-            }
-        } else {
-            console.log('No recommendation.');
+        console.log('end getHints');
+        if(results.length>=0){
+            resolve(results);
+        }else{
+            reject('NO results.');
         }
     });
+}
+
+function isEmptyObject(obj) {   
+　　for (var name in obj){
+　　　　return false;
+　　}　　
+　　return true;
 }
 
 
@@ -382,7 +401,7 @@ function onAuthStateChanged(user) {
         // initDatabase(64);
         return;
     }
-    // cleanUI();
+    cleanUI();
     if (user) {
         // user is signed in
         currentUID = user.uid;
@@ -393,7 +412,7 @@ function onAuthStateChanged(user) {
         writeUserData(user.uid, user.displayName, user.email, photoURL);
         userName.textContent = currentUName;
         userPic.src = (user.photoURL || defaultPic);
-        userPicThumb.src = (user.photoURL || defaultPic);      
+        userPicThumb.src = (user.photoURL || defaultPic);
         initTimer();
         // initialize the database which keeps the links
         // initDatabase(64);
@@ -503,6 +522,12 @@ function handleSignUp() {
         alert('注册成功，但邮箱未验证！');
     });
     // [END createwithemail]
+}
+
+function bindEnter(event){
+    if (event.keyCode==13) {
+        signInEmail.click();
+    }
 }
 
 window.addEventListener('load', function () {

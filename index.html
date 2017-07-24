@@ -23,7 +23,7 @@
     <script src="scripts/config.js" type="text/javascript"></script>
 </head>
 
-<body>
+<body onkeydown="bindEnter(event)">
     <div class="layout mdl-layout mdl-js-layout mdl-layout--fixed-header">
         <!-- Header section containing title -->
         <section id="page-splash">
@@ -106,39 +106,62 @@
         <img width="50" height="50" src="images/zoomOut.png" class="zoomOut" />
         <img width="50" height="50" src="images/zoomIn.png" class="zoomIn" />
         <img width="50" height="50" src="images/restart.png" class="restart" />
-        <img width="50" height="50" src="images/settings.png" class="settings" />
+        <img width="50" height="50" id="show-settings" src="images/settings.png" class="settings" />
     </div>
 
     <div class="progress-bar">
         <div id="progress" class="mdl-progress mdl-js-progress">
-            </div>
+        </div>
         <button id="percentage" type="button" class="mdl-chip">
             <span class="mdl-chip__text">30%</span>
         </button>
     </div>
 
-        <dialog class="mdl-dialog" id="user-profile">
-            <div class="mdl-dialog__content">
-                <p>
-                    当前用户
-                    <i class="material-icons md-48">account_circle</i>
-                </p>
-                <div id="user-name"></div>
-                <img id='user-pic' src='images/profile_placeholder.png'></img>
-                <div class="mdl-dialog__actions mdl-card--border">
-                    <button type="button" class="mdl-button" id="close-button">关闭</button>
-                    <button type="button" class="mdl-button" id="sign-out-button">登出</button>
-                </div>
+    <dialog class="mdl-dialog" id="settings">
+        <div class="mdl-dialog__content">
+            <p>
+                游戏设置
+                <i class="material-icons md-48">settings</i>
+            </p>
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="option-1">
+            <input type="radio" id="option-1" class="mdl-radio__button" name="options" value="1" checked>
+            <span class="mdl-radio__label">Level 1</span>
+            </label>
+            <br/>
+            <br/>            
+            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="option-2">
+            <input type="radio" id="option-2" class="mdl-radio__button" name="options" value="2">
+            <span class="mdl-radio__label">Level 2</span>
+            </label>
+            <div class="mdl-dialog__actions mdl-card--border">
+                <button type="button" class="mdl-button" id="cancel-button">取消</button>
+                <button type="button" class="mdl-button" id="apply-button">应用</button>
             </div>
-        </dialog>
-
-        <div class="solution">
-            <img width="512" height="512" id="puzzle-image" class="puzzle-image" style="display: none;" src="images/cat.jpg" />
-            <img width="128" height="128" id="empty" style="display: none;" src="images/empty.png" />
         </div>
+    </dialog>
 
-        <script type="text/javascript" src="scripts/main.js"></script>
-        <!-- <script>
+    <dialog class="mdl-dialog" id="user-profile">
+        <div class="mdl-dialog__content">
+            <p>
+                当前用户
+                <i class="material-icons md-48">account_circle</i>
+            </p>
+            <div id="user-name"></div>
+            <img id='user-pic' src='images/profile_placeholder.png'></img>
+            <div class="mdl-dialog__actions mdl-card--border">
+                <button type="button" class="mdl-button" id="close-button">关闭</button>
+                <button type="button" class="mdl-button" id="sign-out-button">登出</button>
+            </div>
+        </div>
+    </dialog>
+
+    <div class="solution">
+        <img width="512" height="512" id="puzzle-image" class="puzzle-image" style="display: none;" src="images/cat.jpg" />
+        <img width="128" height="128" id="empty" style="display: none;" src="images/empty.png" />
+    </div>
+
+    <script type="text/javascript" src="scripts/main.js"></script>
+    <!-- <script>
         var canvas = document.getElementById('canvas');
         var box = canvas.getBoundingClientRect(); //canvas元素的边界框
         console.log(canvas.width + "---" + canvas.height); //300-150
