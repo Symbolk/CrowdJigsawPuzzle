@@ -96,9 +96,9 @@ function writeUserData(userId, name, email, imageUrl) {
  * 
  * logs:
  * ++ : add one supporter for the link
- * -- : reduce one supporter for the link
- * ++++ : new a link and the current user is the first supporter
- * ---- : remove a link because the current user is the last supporter
+ * - : reduce one supporter for the link
+ * ++ : new a link and the current user is the first supporter
+ * - : remove a link because the current user is the last supporter
  * @param {*} sourceTileIndex the selected tile's index
  * @param {*} aroundTiles the array of the around tiles after release, whose length <= 4
  */
@@ -123,7 +123,7 @@ function updateLinks(sourceTileIndex, aroundTiles) {
             // for every tile to be processed
             for (let at of aroundTiles) {
                 let targetTileIndex = at.tile.findex;
-                let position = at.position;
+                let direction = at.direction;
 
                 let targetIndexString = targetTileIndex.toString();
                 if (snapshot.hasChild(targetIndexString)) {
@@ -131,11 +131,11 @@ function updateLinks(sourceTileIndex, aroundTiles) {
                     lastLinkedIndexes.removeByValue(targetIndexString);
                     // supported by others but not current user, so update the link
                     if (!snapshot.child(targetIndexString).child('supporters').hasChild(currentUName)) {
-                        console.log('++' + sourceIndexString + '-' + position + '-' + targetIndexString);
+                        console.log('+' + sourceIndexString + '-' + direction + '-' + targetIndexString);
                         let newSupNum = snapshot.child(targetIndexString).val().supNum + 1;
                         let updateLink = {};
                         updateLink['supNum'] = newSupNum;
-                        updateLink['supporters/' + currentUName] = position;
+                        updateLink['supporters/' + currentUName] = direction;
                         if (snapshot.child(targetIndexString).child('opposers').hasChild(currentUName)) {
                             let newOppNum = snapshot.child(targetIndexString).val().oppNum - 1;
                             sourceRef.child(targetIndexString).child('opposers').child(currentUName).remove();
@@ -144,13 +144,13 @@ function updateLinks(sourceTileIndex, aroundTiles) {
                         sourceRef.child(targetIndexString).update(updateLink);
                     }
                 } else {
-                    console.log('++++' + sourceIndexString + '-' + position + '-' + targetIndexString);
+                    console.log('++' + sourceIndexString + '-' + direction + '-' + targetIndexString);
                     // not yet supported by any user, so new a link
                     sourceRef.child(targetIndexString).set({
                         target: targetTileIndex,
                         supNum: 1,
                         supporters: {
-                            [currentUName]: position
+                            [currentUName]: direction
                         },
                         oppNum: 0
                     });
@@ -164,15 +164,15 @@ function updateLinks(sourceTileIndex, aroundTiles) {
                     let childRef = sourceRef.child(targetIndexString);
                     listeningFirebaseRefs.push(childRef);
                     let newSupNum = snapshot.child(targetIndexString).val().supNum - 1;
-                    let position = snapshot.child(targetIndexString).val().supporters[currentUName];
+                    let direction = snapshot.child(targetIndexString).val().supporters[currentUName];
                     let newOppNum = snapshot.child(targetIndexString).val().oppNum + 1;
 
-                    console.log('--' + sourceIndexString + '-' + position + '-' + targetIndexString);
+                    console.log('-' + sourceIndexString + '-' + direction + '-' + targetIndexString);
                     let updateLink = {};
                     childRef.child('supporters').child(currentUName).remove();
                     updateLink['supNum'] = newSupNum;
                     updateLink['oppNum'] = newOppNum;
-                    updateLink['opposers/' + currentUName] = position;
+                    updateLink['opposers/' + currentUName] = direction;
                     childRef.update(updateLink);
 
                     let targetRef = firebase.database().ref('links/' + targetIndexString);
@@ -183,12 +183,12 @@ function updateLinks(sourceTileIndex, aroundTiles) {
                         if (snapshot.child(sourceIndexString).child('supporters').hasChild(currentUName)) {
                             let newSupNum = snapshot.child(sourceIndexString).val().supNum - 1;
                             let newOppNum = snapshot.child(sourceIndexString).val().oppNum + 1;
-                            console.log('--' + targetIndexString + '-' + position + '-' + sourceIndexString);
+                            console.log('-' + targetIndexString + '-' + direction + '-' + sourceIndexString);
                             let updateLink = {};
                             childRef.child('supporters').child(currentUName).remove();
                             updateLink['supNum'] = newSupNum;
                             updateLink['oppNum'] = newOppNum;
-                            updateLink['opposers/' + currentUName] = position;
+                            updateLink['opposers/' + currentUName] = direction;
                             childRef.update(updateLink);
                         }
                     });
@@ -199,20 +199,20 @@ function updateLinks(sourceTileIndex, aroundTiles) {
         // update bidirectionally in the targets side
         for (let at of aroundTiles) {
             let targetIndex = at.tile.findex;
-            // get the opposite position(target relative to the source)
-            let position = at.position;
-            switch (at.position) {
+            // get the opposite direction(target relative to the source)
+            let direction = at.direction;
+            switch (at.direction) {
                 case 'L':
-                    position = 'R';
+                    direction = 'R';
                     break;
                 case 'R':
-                    position = 'L';
+                    direction = 'L';
                     break;
                 case 'T':
-                    position = 'B';
+                    direction = 'B';
                     break;
                 case 'B':
-                    position = 'T';
+                    direction = 'T';
                     break;
                 default:
                     break;
@@ -224,11 +224,11 @@ function updateLinks(sourceTileIndex, aroundTiles) {
             targetRef.once('value', snapshot => {
                 if (snapshot.hasChild(sourceIndexString)) {
                     if (!snapshot.child(sourceIndexString).child('supporters').hasChild(currentUName)) {
-                        console.log('++' + targetIndexString + '-' + position + '-' + sourceIndexString);
+                        console.log('+' + targetIndexString + '-' + direction + '-' + sourceIndexString);
                         let newSupNum = snapshot.child(sourceIndexString).val().supNum + 1;
                         let updateLink = {};
                         updateLink['supNum'] = newSupNum;
-                        updateLink['supporters/' + currentUName] = position;
+                        updateLink['supporters/' + currentUName] = direction;
                         if (snapshot.child(sourceIndexString).child('opposers').hasChild(currentUName)) {
                             let newOppNum = snapshot.child(sourceIndexString).val().oppNum - 1;
                             targetRef.child(sourceIndexString).child('opposers').child(currentUName).remove();
@@ -237,12 +237,12 @@ function updateLinks(sourceTileIndex, aroundTiles) {
                         targetRef.child(sourceIndexString).update(updateLink);
                     }
                 } else {
-                    console.log('++++' + targetIndexString + '-' + position + '-' + sourceIndexString);
+                    console.log('++' + targetIndexString + '-' + direction + '-' + sourceIndexString);
                     targetRef.child(sourceIndexString).set({
                         target: sourceTileIndex,
                         supNum: 1,
                         supporters: {
-                            [currentUName]: position
+                            [currentUName]: direction
                         },
                         oppNum: 0
                     });
@@ -275,13 +275,13 @@ function removeLinks(sourceTileIndex) {
                         let childRef = sourceRef.child(targetIndex);
                         listeningFirebaseRefs.push(childRef);
                         let newSupNum = snapshot.child(targetIndex).val().supNum - 1;
-                        let position = snapshot.child(targetIndex).val().supporters[currentUName];
+                        let direction = snapshot.child(targetIndex).val().supporters[currentUName];
                         let newOppNum = snapshot.child(targetIndex).val().oppNum + 1;
                         let updateLink = {};
                         childRef.child('supporters').child(currentUName).remove();
                         updateLink['supNum'] = newSupNum;
                         updateLink['oppNum'] = newOppNum;
-                        updateLink['opposers/' + currentUName] = position;
+                        updateLink['opposers/' + currentUName] = direction;
                         childRef.update(updateLink);
                     });
                     // also update the links from the current tile to the target tiles
@@ -292,12 +292,12 @@ function removeLinks(sourceTileIndex) {
                         if (snapshot.child(sourceTileIndex).child('supporters').hasChild(currentUName)) {
                             let newSupNum = snapshot.child(sourceTileIndex).val().supNum - 1;
                             let newOppNum = snapshot.child(sourceTileIndex).val().oppNum + 1;
-                            let position = snapshot.child(sourceTileIndex).val().supporters[currentUName];
+                            let direction = snapshot.child(sourceTileIndex).val().supporters[currentUName];
                             let updateLink = {};
                             childRef.child('supporters').child(currentUName).remove();
                             updateLink['supNum'] = newSupNum;
                             updateLink['oppNum'] = newOppNum;
-                            updateLink['opposers/' + currentUName] = position;
+                            updateLink['opposers/' + currentUName] = direction;
                             childRef.update(updateLink);
                         }
                     });
@@ -319,37 +319,63 @@ function removeLinks(sourceTileIndex) {
  */
 
 function getHints(selectedTileIndex, n) {
-    let topTilesRef = firebase.database().ref('links/' + selectedTileIndex).orderByChild('supNum');// ascending order     
+    let tilesRef = firebase.database().ref('links/' + selectedTileIndex);
+    tilesRef.once('value', snapshot => {
+        snapshot.forEach(childSnapshot => {
+            let score = childSnapshot.val().supNum / (childSnapshot.val().supNum + childSnapshot.val().oppNum);
+            let updateScore = {};
+            updateScore['score'] = score;
+            tilesRef.child(childSnapshot.key).update(updateScore);
+        });
+    });
+
+    let topTilesRef = tilesRef.orderByChild('score');// ascending order     
     let topNTilesRef = topTilesRef.limitToLast(n);
     listeningFirebaseRefs.push(topTilesRef);
     listeningFirebaseRefs.push(topNTilesRef);
     // console.trace();
     return new Promise((resolve, reject) => {
-        let results = new Array();
-        console.log('in getHints');
+        let results = [];
         topNTilesRef.once('value').then(snapshot => {
-            // console.log(snapshot.val());
             snapshot.forEach(childSnapshot => {
+                // use the most supported direction as the hint direction
+                let counter= [];
+                let supporters = childSnapshot.val().supporters;
+                for (let key in supporters) {
+                    if (supporters.hasOwnProperty(key)) {
+                        let d = supporters[key];
+                        if(isNaN(counter[d])){
+                            counter[d]=1;
+                        }else{
+                            counter[d]+=1;
+                        }
+                    }
+                }
+                let hintDirection=undefined;
+                for (let key in counter) {
+                    if (counter.hasOwnProperty(key)) { 
+                        if(hintDirection==undefined){
+                            hintDirection=key;
+                        }else{
+                            if(counter[key] > counter[hintDirection]){
+                                hintDirection=key;
+                            }
+                        }
+                    }
+                }
+                // push the hint results into the array
                 results.push({
-                    index : childSnapshot.key,
-                    position : 'R'
+                    index: childSnapshot.key,
+                    direction: hintDirection
                 });
             });
+            if (results.length > 0) {
+                resolve(results);
+            } else {
+                reject('NO results.');
+            }
         });
-        console.log('end getHints');
-        if(results.length>=0){
-            resolve(results);
-        }else{
-            reject('NO results.');
-        }
     });
-}
-
-function isEmptyObject(obj) {   
-　　for (var name in obj){
-　　　　return false;
-　　}　　
-　　return true;
 }
 
 
@@ -524,8 +550,8 @@ function handleSignUp() {
     // [END createwithemail]
 }
 
-function bindEnter(event){
-    if (event.keyCode==13) {
+function bindEnter(event) {
+    if (event.keyCode == 13) {
         signInEmail.click();
     }
 }
