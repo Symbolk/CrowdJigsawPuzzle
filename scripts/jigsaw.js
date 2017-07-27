@@ -134,19 +134,10 @@ function onMouseDown(event) {
             puzzle.pickTile();
             break;
         }
-<<<<<<< HEAD
-        // right click to drag a group of tiles
-        // case 2: {
-        //     puzzle.pickGroup();
-        //     break;
-        // }
-=======
-        // right click to drag a group of tiles or get recommendation
         case 2: {
             puzzle.showRecommendTiles();
             break;
         }
->>>>>>> jigsawdev
     }
 }
 

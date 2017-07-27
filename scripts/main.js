@@ -434,7 +434,7 @@ function onAuthStateChanged(user) {
         currentUID = user.uid;
         currentUName = user.displayName || (user.email.toString().split('.')[0]);
         splashPage.style.display = 'none';
-        let defaultPic = 'http://i2.kiimg.com/1949/e9cc5a57bd8d22fd.png';
+        let defaultPic = '../images/user.png';
         let photoURL = user.photoURL || defaultPic;
         writeUserData(user.uid, user.displayName, user.email, photoURL);
         userName.textContent = currentUName;
