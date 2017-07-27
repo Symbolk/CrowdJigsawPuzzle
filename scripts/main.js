@@ -6,14 +6,23 @@ const signUpEmail = document.querySelector('#sign-up-email');
 const signInGoogle = document.querySelector('#sign-in-google');
 const psResetButton = document.querySelector('#reset-password');
 const userPic = document.querySelector('#user-pic');
+const userPicThumb = document.querySelector('.user');
 const userName = document.querySelector('#user-name');
+
+
+//SIMULATION
+var percentage = 30;
+document.querySelector('#progress').addEventListener('mdl-componentupgraded', function () {
+    this.MaterialProgress.setProgress(percentage);
+    this.MaterialProgress.setBuffer(100 - percentage);
+});
 
 
 var listeningFirebaseRefs = [];
 var currentUID; // firebase.auth().currentUser.uid;
 var currentUName;
 /**
- * click the user charm and show the user profile
+ * click the user icon and show the user profile
  */
 (function () {
     let showButton = document.querySelector('#show-user');
@@ -38,6 +47,7 @@ var currentUName;
         dialog.close();
     });
 }());
+
 
 
 /**
@@ -86,57 +96,63 @@ function writeUserData(userId, name, email, imageUrl) {
  * 
  * logs:
  * ++ : add one supporter for the link
- * -- : reduce one supporter for the link
- * ++++ : new a link and the current user is the first supporter
- * ---- : remove a link because the current user is the last supporter
+ * - : reduce one supporter for the link
+ * ++ : new a link and the current user is the first supporter
+ * - : remove a link because the current user is the last supporter
  * @param {*} sourceTileIndex the selected tile's index
  * @param {*} aroundTiles the array of the around tiles after release, whose length <= 4
  */
-function updateLinks(sourceTileIndex, aroundTileIndexes) {
+function updateLinks(sourceTileIndex, aroundTiles) {
     // get the around tiles BEFORE release
     let sourceRef = firebase.database().ref('links/' + sourceTileIndex);
+    listeningFirebaseRefs.push(sourceRef);
     // linked indexes before this release, whose length <= 4
     let sourceIndexString = sourceTileIndex.toString();
     let lastLinkedIndexes = new Array();
     sourceRef.once('value', snapshot => {
         snapshot.forEach(childSnapshot => {
             let targetIndex = childSnapshot.key;
-            let targetData = childSnapshot.val();
-            if (targetData.supporters[currentUName] === true) {
+            if (childSnapshot.child('supporters').hasChild(currentUName)) {
                 if (!isNaN(targetIndex)) {
                     lastLinkedIndexes.push(targetIndex);
                 }
             }
         });
     }).then(function () {
-        for (let i of lastLinkedIndexes) {
-            console.log(i);
-        }
         sourceRef.once('value', snapshot => {
             // for every tile to be processed
-            for (let targetTileIndex of aroundTileIndexes) {
+            for (let at of aroundTiles) {
+                let targetTileIndex = at.tile.findex;
+                let direction = at.direction;
+
                 let targetIndexString = targetTileIndex.toString();
                 if (snapshot.hasChild(targetIndexString)) {
                     // if it already exists
                     lastLinkedIndexes.removeByValue(targetIndexString);
                     // supported by others but not current user, so update the link
-                    if (snapshot.child(targetIndexString).val().supporters[currentUName] != true) {
-                        console.log('++' + sourceIndexString + '-' + targetIndexString);
+                    if (!snapshot.child(targetIndexString).child('supporters').hasChild(currentUName)) {
+                        console.log('+' + sourceIndexString + '-' + direction + '-' + targetIndexString);
                         let newSupNum = snapshot.child(targetIndexString).val().supNum + 1;
                         let updateLink = {};
                         updateLink['supNum'] = newSupNum;
-                        updateLink['supporters/' + currentUName] = true;
+                        updateLink['supporters/' + currentUName] = direction;
+                        if (snapshot.child(targetIndexString).child('opposers').hasChild(currentUName)) {
+                            let newOppNum = snapshot.child(targetIndexString).val().oppNum - 1;
+                            sourceRef.child(targetIndexString).child('opposers').child(currentUName).remove();
+                            updateLink['oppNum'] = newOppNum;
+                        }
                         sourceRef.child(targetIndexString).update(updateLink);
                     }
                 } else {
-                    console.log('++++' + sourceIndexString + '-' + targetIndexString);
-                    // not yet supported by anyone, so new a link
+                    console.log('++' + sourceIndexString + '-' + direction + '-' + targetIndexString);
+                    // not yet supported by any user, so new a link
                     sourceRef.child(targetIndexString).set({
                         target: targetTileIndex,
                         supNum: 1,
                         supporters: {
-                            [currentUName]: true
-                        }
+                            [currentUName]: direction
+                        },
+                        oppNum: 0
                     });
                 }
             }
@@ -146,33 +162,34 @@ function updateLinks(sourceTileIndex, aroundTileIndexes) {
                 for (let targetIndex of lastLinkedIndexes) {
                     let targetIndexString = targetIndex.toString();
                     let childRef = sourceRef.child(targetIndexString);
+                    listeningFirebaseRefs.push(childRef);
                     let newSupNum = snapshot.child(targetIndexString).val().supNum - 1;
-                    if (newSupNum === 0) {
-                        console.log('----' + sourceIndexString + '-' + targetIndexString);
-                        childRef.remove();
-                    } else {
-                        console.log('--' + sourceIndexString + '-' + targetIndexString);
-                        let updateLink = {};
-                        updateLink['supNum'] = newSupNum;
-                        childRef.update(updateLink);
-                        childRef.child('supporters').child(currentUName).remove();
-                    }
+                    let direction = snapshot.child(targetIndexString).val().supporters[currentUName];
+                    let newOppNum = snapshot.child(targetIndexString).val().oppNum + 1;
+
+                    console.log('-' + sourceIndexString + '-' + direction + '-' + targetIndexString);
+                    let updateLink = {};
+                    childRef.child('supporters').child(currentUName).remove();
+                    updateLink['supNum'] = newSupNum;
+                    updateLink['oppNum'] = newOppNum;
+                    updateLink['opposers/' + currentUName] = direction;
+                    childRef.update(updateLink);
 
                     let targetRef = firebase.database().ref('links/' + targetIndexString);
+                    listeningFirebaseRefs.push(targetRef);
                     targetRef.once('value').then(snapshot => {
                         let childRef = targetRef.child(sourceIndexString);
-                        if (snapshot.child(sourceIndexString).val().supporters[currentUName] === true) {
+                        listeningFirebaseRefs.push(childRef);
+                        if (snapshot.child(sourceIndexString).child('supporters').hasChild(currentUName)) {
                             let newSupNum = snapshot.child(sourceIndexString).val().supNum - 1;
-                            if (newSupNum === 0) {
-                                console.log('----' + targetIndexString + '-' + sourceIndexString);
-                                childRef.remove();
-                            } else {
-                                console.log('--' + targetIndexString + '-' + sourceIndexString);
-                                let updateLink = {};
-                                updateLink['supNum'] = newSupNum;
-                                childRef.update(updateLink);
-                                childRef.child('supporters').child(currentUName).remove();
-                            }
+                            let newOppNum = snapshot.child(sourceIndexString).val().oppNum + 1;
+                            console.log('-' + targetIndexString + '-' + direction + '-' + sourceIndexString);
+                            let updateLink = {};
+                            childRef.child('supporters').child(currentUName).remove();
+                            updateLink['supNum'] = newSupNum;
+                            updateLink['oppNum'] = newOppNum;
+                            updateLink['opposers/' + currentUName] = direction;
+                            childRef.update(updateLink);
                         }
                     });
                 }
@@ -180,27 +197,54 @@ function updateLinks(sourceTileIndex, aroundTileIndexes) {
         });
 
         // update bidirectionally in the targets side
-        for (let targetIndex of aroundTileIndexes) {
+        for (let at of aroundTiles) {
+            let targetIndex = at.tile.findex;
+            // get the opposite direction(target relative to the source)
+            let direction = at.direction;
+            switch (at.direction) {
+                case 'L':
+                    direction = 'R';
+                    break;
+                case 'R':
+                    direction = 'L';
+                    break;
+                case 'T':
+                    direction = 'B';
+                    break;
+                case 'B':
+                    direction = 'T';
+                    break;
+                default:
+                    break;
+            }
+
             let targetIndexString = targetIndex.toString();
             let targetRef = firebase.database().ref('links/' + targetIndexString);
+            listeningFirebaseRefs.push(targetRef);
             targetRef.once('value', snapshot => {
                 if (snapshot.hasChild(sourceIndexString)) {
-                    if (snapshot.child(sourceIndexString).val().supporters[currentUName] != true) {
-                        console.log('++' + targetIndexString + '-' + sourceIndexString);
+                    if (!snapshot.child(sourceIndexString).child('supporters').hasChild(currentUName)) {
+                        console.log('+' + targetIndexString + '-' + direction + '-' + sourceIndexString);
                         let newSupNum = snapshot.child(sourceIndexString).val().supNum + 1;
                         let updateLink = {};
                         updateLink['supNum'] = newSupNum;
-                        updateLink['supporters/' + currentUName] = true;
+                        updateLink['supporters/' + currentUName] = direction;
+                        if (snapshot.child(sourceIndexString).child('opposers').hasChild(currentUName)) {
+                            let newOppNum = snapshot.child(sourceIndexString).val().oppNum - 1;
+                            targetRef.child(sourceIndexString).child('opposers').child(currentUName).remove();
+                            updateLink['oppNum'] = newOppNum;
+                        }
                         targetRef.child(sourceIndexString).update(updateLink);
                     }
                 } else {
-                    console.log('++++' + targetIndexString + '-' + sourceIndexString);
+                    console.log('++' + targetIndexString + '-' + direction + '-' + sourceIndexString);
                     targetRef.child(sourceIndexString).set({
                         target: sourceTileIndex,
                         supNum: 1,
                         supporters: {
-                            [currentUName]: true
-                        }
+                            [currentUName]: direction
+                        },
+                        oppNum: 0
                     });
                 }
             });
@@ -219,42 +263,42 @@ function updateLinks(sourceTileIndex, aroundTileIndexes) {
 function removeLinks(sourceTileIndex) {
     // get the around tiles BEFORE release
     let sourceRef = firebase.database().ref('links/' + sourceTileIndex);
+    listeningFirebaseRefs.push(sourceRef);
     sourceRef.once('value').then(snapshot => {
         snapshot.forEach(childSnapshot => {
             let targetIndex = childSnapshot.key;
-            let targetData = childSnapshot.val();
-            if (targetData.supporters[currentUName] === true) {
+            if (childSnapshot.child('supporters').hasChild(currentUName)) {
                 // if(Number.isInteger(targetIndex)){
                 if (!isNaN(targetIndex)) {
                     // remove and upade the links around the current tile
                     sourceRef.once('value').then(snapshot => {
                         let childRef = sourceRef.child(targetIndex);
-                        if (snapshot.child(targetIndex).val().supporters[currentUName] === true) { //to makes sure
-                            let newSupNum = snapshot.child(targetIndex).val().supNum - 1;
-                            if (newSupNum === 0) {
-                                childRef.remove();
-                            } else {
-                                let updateLink = {};
-                                updateLink['supNum'] = newSupNum;
-                                childRef.update(updateLink);
-                                childRef.child('supporters').child(currentUName).remove();
-                            }
-                        }
+                        listeningFirebaseRefs.push(childRef);
+                        let newSupNum = snapshot.child(targetIndex).val().supNum - 1;
+                        let direction = snapshot.child(targetIndex).val().supporters[currentUName];
+                        let newOppNum = snapshot.child(targetIndex).val().oppNum + 1;
+                        let updateLink = {};
+                        childRef.child('supporters').child(currentUName).remove();
+                        updateLink['supNum'] = newSupNum;
+                        updateLink['oppNum'] = newOppNum;
+                        updateLink['opposers/' + currentUName] = direction;
+                        childRef.update(updateLink);
                     });
                     // also update the links from the current tile to the target tiles
                     let targetRef = firebase.database().ref('links/' + targetIndex);
+                    listeningFirebaseRefs.push(targetRef);
                     targetRef.once('value').then(snapshot => {
                         let childRef = targetRef.child(sourceTileIndex);
-                        if (snapshot.child(sourceTileIndex).val().supporters[currentUName] === true) {
+                        if (snapshot.child(sourceTileIndex).child('supporters').hasChild(currentUName)) {
                             let newSupNum = snapshot.child(sourceTileIndex).val().supNum - 1;
-                            if (newSupNum === 0) {
-                                childRef.remove();
-                            } else {
-                                let updateLink = {};
-                                updateLink['supNum'] = newSupNum;
-                                childRef.update(updateLink);
-                                childRef.child('supporters').child(currentUName).remove();
-                            }
+                            let newOppNum = snapshot.child(sourceTileIndex).val().oppNum + 1;
+                            let direction = snapshot.child(sourceTileIndex).val().supporters[currentUName];
+                            let updateLink = {};
+                            childRef.child('supporters').child(currentUName).remove();
+                            updateLink['supNum'] = newSupNum;
+                            updateLink['oppNum'] = newOppNum;
+                            updateLink['opposers/' + currentUName] = direction;
+                            childRef.update(updateLink);
                         }
                     });
                 }
@@ -264,35 +308,74 @@ function removeLinks(sourceTileIndex) {
 }
 
 /**
- * Recommend 1~4 tiles for the current user
+ * Recommend 1~4 tiles for the current user 
+ * Current recommendation algorithm:
+ * 1, get the selected tile's link list
+ * 2, order the link list by supNum
+ * 3, for the top n links, get their most possible directions from the supporters list
+ * 4, attach the recommended tiles to the selected tile
  * @param {*} selectedTileIndex 
  * @param {*} n 
  */
-function recommendTiles(selectedTileIndex, n, tiles) {
-    let topTilesRef = firebase.database().ref('links/' + selectedTileIndex).orderByChild('supNum');// ascending order     
-    let topNTilesRef = topTilesRef.limitToLast(n);
-    let topNIndex = new Array();
-    topNTilesRef.once('value').then(snapshot => {
-        // console.log(snapshot.val());
+
+function getHints(selectedTileIndex, n) {
+    let tilesRef = firebase.database().ref('links/' + selectedTileIndex);
+    tilesRef.once('value', snapshot => {
         snapshot.forEach(childSnapshot => {
-            if (!isNaN(childSnapshot.key)) {
-                topNIndex.push(childSnapshot.key);
+            let score = childSnapshot.val().supNum / (childSnapshot.val().supNum + childSnapshot.val().oppNum);
+            let updateScore = {};
+            updateScore['score'] = score;
+            tilesRef.child(childSnapshot.key).update(updateScore);
+        });
+    });
+
+    let topTilesRef = tilesRef.orderByChild('score');// ascending order     
+    let topNTilesRef = topTilesRef.limitToLast(n);
+    listeningFirebaseRefs.push(topTilesRef);
+    listeningFirebaseRefs.push(topNTilesRef);
+    // console.trace();
+    return new Promise((resolve, reject) => {
+        let results = [];
+        topNTilesRef.once('value').then(snapshot => {
+            snapshot.forEach(childSnapshot => {
+                // use the most supported direction as the hint direction
+                let counter= [];
+                let supporters = childSnapshot.val().supporters;
+                for (let key in supporters) {
+                    if (supporters.hasOwnProperty(key)) {
+                        let d = supporters[key];
+                        if(isNaN(counter[d])){
+                            counter[d]=1;
+                        }else{
+                            counter[d]+=1;
+                        }
+                    }
+                }
+                let hintDirection=undefined;
+                for (let key in counter) {
+                    if (counter.hasOwnProperty(key)) { 
+                        if(hintDirection==undefined){
+                            hintDirection=key;
+                        }else{
+                            if(counter[key] > counter[hintDirection]){
+                                hintDirection=key;
+                            }
+                        }
+                    }
+                }
+                // push the hint results into the array
+                results.push({
+                    index: childSnapshot.key,
+                    score: childSnapshot.val().score,
+                    direction: hintDirection
+                });
+            });
+            if (results.length > 0) {
+                resolve(results);
+            } else {
+                reject('NO results.');
             }
         });
-    }).then(function () {
-        if (topNIndex.length > 0) {
-            for (let i of topNIndex) {
-                let tile = tiles[Number(i)];
-                tile._style.strokeColor = "#FF0000";
-                tile.scale(1.25);
-                setTimeout(function () {
-                    tile._style.strokeColor = "#FFF";
-                    tile.scale(1 / 1.25);
-                }, 3000);
-            }
-        } else {
-            console.log('No recommendation.');
-        }
     });
 }
 
@@ -345,16 +428,18 @@ function onAuthStateChanged(user) {
         // initDatabase(64);
         return;
     }
-    // cleanUI();
+    cleanUI();
     if (user) {
         // user is signed in
         currentUID = user.uid;
         currentUName = user.displayName || (user.email.toString().split('.')[0]);
         splashPage.style.display = 'none';
-        let photoURL = user.photoURL || '../images/profile_placeholder.png';
+        let defaultPic = 'http://i2.kiimg.com/1949/e9cc5a57bd8d22fd.png';
+        let photoURL = user.photoURL || defaultPic;
         writeUserData(user.uid, user.displayName, user.email, photoURL);
         userName.textContent = currentUName;
-        userPic.src=  ( user.photoURL || '../images/profile_placeholder.png');
+        userPic.src = (user.photoURL || defaultPic);
+        userPicThumb.src = (user.photoURL || defaultPic);
         initTimer();
         // initialize the database which keeps the links
         // initDatabase(64);
@@ -464,6 +549,12 @@ function handleSignUp() {
         alert('注册成功，但邮箱未验证！');
     });
     // [END createwithemail]
+}
+
+function bindEnter(event) {
+    if (event.keyCode == 13) {
+        signInEmail.click();
+    }
 }
 
 window.addEventListener('load', function () {

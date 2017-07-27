@@ -1,30 +1,18 @@
 
-// auto hide and show some elements
-$('.charms').mouseleave(function () {
-    $('.charms').animate({
-        // width : "hide",  
-        // paddingLeft : "hide",  
-        // paddingRight : "hide",  
-        // marginLeft : "hide",  
-        // marginRight : "hide"  
-        opacity: 0
-    });
+// auto hide and show some components when the user switch focus between workspace and sidespace
+$('.charms, .title, .info, .progress-bar').mouseleave(function () {
+    $('.charms').animate({ opacity: 0 });
     $('.title').animate({ opacity: 0 });
-    $('.info').animate({ opacity: 0 });    
-});
-$('.charms').mouseover(function () {
-    $('.charms').animate({
-        // width : "show",  
-        // paddingLeft : "show",  
-        // paddingRight : "show",  
-        // marginLeft : "show",  
-        // marginRight : "show" 
-        opacity: 0.75
-    });
-    $('.title').animate({ opacity: 0.75 });
-    $('.info').animate({ opacity: 0.75 });
+    $('.info').animate({ opacity: 0 });
+    $('.progress-bar').animate({ opacity: 0 });
 });
 
+$('.charms, .title, .info, .progress-bar').mouseover(function () {
+    $('.charms').animate({ opacity: 1.0 });
+    $('.title').animate({ opacity: 1.0 });
+    $('.info').animate({ opacity: 1.0 });
+    $('.progress-bar').animate({ opacity: 1.0 });
+});
 
 
 Array.prototype.remove = function (start, end) {
@@ -45,18 +33,24 @@ var tileWidth = 64;
 var config = ({
     zoomScaleOnDrag: 1.0,
     imgName: 'puzzle-image',
+    tileShape: 'straight', // curved or straight
     tileWidth: tileWidth,
     tilesPerRow: Math.ceil(imgWidth / tileWidth), //returns min int >= arg
     tilesPerColumn: Math.ceil(imgHeight / tileWidth),
     imgWidth: imgWidth,
     imgHeight: imgHeight,
-    shadowWidth: 120
+    shadowWidth: 120,
 });
 
+
+/**
+ * Start building the puzzle
+ */
 var puzzle = new JigsawPuzzle(config);
-puzzle.zoom(-.3);
+puzzle.zoom(-.1);
 var path;
 var movePath = false;
+
 
 // add functions to the charms(e.g. toolbox)
 $('.zoomIn').click(function () {
@@ -79,9 +73,56 @@ $('.help').mousedown(function () {
     }
 });
 
+/**
+ * click the settings button and show the puzzle settings
+ */
+(function () {
+    var showButton = document.querySelector('#show-settings');
+    var dialog = document.querySelector('#settings');
+    var cancelButton = document.querySelector('#cancel-button');
+    var applyButton = document.querySelector('#apply-button');
+
+    if (!dialog.showModal) {
+        dialogPolyfill.registerDialog(dialog);
+    }
+
+    cancelButton.addEventListener('click', function (event) {
+        dialog.close();
+    });
+
+    showButton.addEventListener('click', function (event) {
+        dialog.showModal();
+    });
+
+    /**
+     * Disabled for now
+     */
+    applyButton.addEventListener('click', function (event) {
+        if (document.querySelector('#option-1').checked === true) {
+            // console.log('Level 1');
+            // config.tileShape = 'straight';
+            // var c = document.querySelector("#canvas");
+            // var cxt = c.getContext("2d");
+            // cxt.fillStyle = "white";
+            // puzzle = new JigsawPuzzle(config);
+
+        } else {
+            // console.log('Level 2');
+            // config.tileShape = 'curved';
+            // $('.canvas').remove();
+            // var newC=$('<canvas id="canvas" class="canvas" resize></canvas>');
+            // $('.puzzle').append(newC);
+            // var puzzle = new JigsawPuzzle(config);
+        }
+        dialog.close();
+    });
+}());
+
+
 $('.restart').click(function () {
     // document.execCommand('Refresh');
     window.location.reload();
+    // var puzzle = new JigsawPuzzle(config);
 });
 
 var charmsWidth = $('.charms').css('width').replace('px', '');
@@ -93,17 +134,32 @@ function onMouseDown(event) {
             puzzle.pickTile();
             break;
         }
+<<<<<<< HEAD
         // right click to drag a group of tiles
         // case 2: {
         //     puzzle.pickGroup();
         //     break;
         // }
+=======
+        // right click to drag a group of tiles or get recommendation
+        case 2: {
+            puzzle.showRecommendTiles();
+            break;
+        }
+>>>>>>> jigsawdev
     }
 }
 
 
+
 function onMouseUp(event) {
-    puzzle.releaseTile();
+    // restrict to the left click
+    switch (event.event.button) {
+        case 0: {
+            puzzle.releaseTile();
+            break;
+        }
+    }
 }
 
 function onMouseMove(event) {
@@ -117,7 +173,12 @@ function onMouseMove(event) {
 }
 
 function onMouseDrag(event) {
-    puzzle.dragTile(event.delta);
+    switch (event.event.button) {
+        case 0: {
+            puzzle.dragTile(event.delta);
+            break;
+        }
+    }
 }
 
 function onKeyUp(event) {
@@ -134,13 +195,15 @@ function onKeyUp(event) {
 
 function JigsawPuzzle(config) {
     instance = this; // the current object(which calls the function)
+    this.tileShape = config.tileShape;
+
     this.currentZoom = 1;
     this.zoomScaleOnDrag = config.zoomScaleOnDrag;
     this.imgName = config.imgName;
     this.shadowWidth = config.shadowWidth;
     this.puzzleImage = new Raster(config.imgName);
     this.puzzleImage.position = view.center;
-    
+
     this.puzzleImage.visible = false;
     this.tileWidth = config.tileWidth;
 
@@ -151,27 +214,15 @@ function JigsawPuzzle(config) {
     // output some info about this puzzle
     console.log("Game started : " + this.tileNum + " tiles(" + this.tilesPerRow + " rows * " + this.tilesPerColumn + " cols)");
 
-    // SIMULATION CODE
-    var tmp=[1,2,3];
-    var tmp2=[1,3,5,8];
-    var tmp3=[1,3,5,7];    
-    // updateLinks(0, tmp); // symbolk@qq    
-    // updateLinks(0, tmp3); // symbolk@163
-
-    // removeLinks(0);
-
     this.tileMarginWidth = this.tileWidth * 0.203125;
     this.selectedTile = undefined;
     this.selectedTileIndex = undefined;
-    this.selectionGroup = undefined;
+    this.selectedGroup = undefined;
     this.shadowScale = 1.5;
     this.tiles = createTiles(this.tilesPerRow, this.tilesPerColumn);
 
     // keep track of the steps of the current user
     this.steps = 0;
-    
-    var aCircle = new Path.Circle(new Point(0, 0), 10);
-    aCircle.strokeColor = 'red';
 
     function createTiles(xTileCount, yTileCount) {
         var tiles = new Array();
@@ -234,8 +285,8 @@ function JigsawPuzzle(config) {
                     Math.round(position.x / instance.tileWidth) + 1,//returns int closest to arg
                     Math.round(position.y / instance.tileWidth) + 1);
 
-                tile.position = cellPosition * instance.tileWidth;
-                tile.cellPosition = cellPosition;
+                tile.position = cellPosition * instance.tileWidth; // round position
+                tile.cellPosition = cellPosition; // cell position
             }
         }
 
@@ -309,7 +360,19 @@ function JigsawPuzzle(config) {
 
     function getRandomTabValue() {
         //math.floor() returns max int <= arg
-        return Math.pow(-1, Math.floor(Math.random() * 2));
+        switch (instance.tileShape) {
+            case 'straight': {
+                return 0;
+                break;
+            }
+            case 'curved': {
+                return Math.pow(-1, Math.floor(Math.random() * 2));
+                break;
+            }
+            default: {
+                return 0;
+            }
+        }
     }
 
     function getMask(tileRatio, topTab, rightTab, bottomTab, leftTab, tileWidth) {
@@ -389,11 +452,6 @@ function JigsawPuzzle(config) {
         return targetRaster;
     }
 
-    this.pickGroup = function () {
-        // get the around tiles
-
-    }
-
     this.pickTile = function () {
         if (instance.selectedTile) {
             if (!instance.selectedTile.lastScale) {
@@ -405,47 +463,49 @@ function JigsawPuzzle(config) {
                     return;
                 }
             }
-
+            // whether the tile is moved or just selected
+            instance.selectedTile.moved = false;
+            // get all linked tiles and group them together
+            var cellPosition = instance.selectedTile.cellPosition;
             instance.selectedTile.cellPosition = undefined;
+            instance.selectedGroup = new Group(instance.selectedTile);
 
-            instance.selectionGroup = new Group(instance.selectedTile);
+            var directions = [
+                new Point(0, -1),
+                new Point(1, 0),
+                new Point(0, 1),
+                new Point(-1, 0)
+            ];
+            for (var i = 0; i < 4; i++) {
+                var t = getTileAtCellPosition(cellPosition + directions[i]);
+                if (t != undefined) {
+                    t.cellPosition = undefined;
+                    // instance.selectedGroup.addChild(t);
+                }
+            }
 
             var pos = new Point(instance.selectedTile.position.x, instance.selectedTile.position.y);
-            instance.selectedTile.position = new Point(0, 0);
+            // instance.selectedTile.position = new Point(0, 0);
             // the index of the tile
-            console.log('Tile selected : ' + instance.selectedTileIndex);
+            console.log('@ ' + instance.selectedTileIndex);
             // console.log(instance.selectedTile.findex);
-            instance.selectionGroup.position = pos;
+            instance.selectedGroup.position = pos;
+        }
+    }
 
-            var topN = 2;
-            // returns an array with length <= topN
-            recommendTiles(instance.selectedTileIndex, topN, instance.tiles);
-
-            // SIMULATION :highlight 2 random tiles
-            // var r1 = parseInt(Math.random() * instance.tileNum, 10);
-            // var r2 = parseInt(Math.random() * instance.tileNum, 10);
-
-            // var t1 = instance.tiles[r1];
-            // var t2 = instance.tiles[r2];
-            // t1.strokeColor = "#FF0000";
-            // t2.strokeColor = "#FF0000";
-            // t1.scale(instance.zoomScaleOnDrag);
-            // t2.scale(instance.zoomScaleOnDrag);
-            // // disappear after 2000 ms
-            // setTimeout(function () {
-            //     t1.strokeColor = "#FFF";
-            //     t2.strokeColor = "#FFF";
-            //     t1.scale(1.0 / instance.zoomScaleOnDrag);
-            //     t2.scale(1.0 / instance.zoomScaleOnDrag);
-            // }, 1000);
+    this.showRecommendTiles = function () {
+        if (instance.selectedTile) {
+            showHints(instance.selectedTile, 4);
         }
     }
 
     this.releaseTile = function () {
         if (instance.selectedTile) {
+            // the release position
             var cellPosition = new Point(
-                Math.round(instance.selectionGroup.position.x / instance.tileWidth),
-                Math.round(instance.selectionGroup.position.y / instance.tileWidth));
+                Math.round(instance.selectedGroup.position.x / instance.tileWidth),
+                Math.round(instance.selectedGroup.position.y / instance.tileWidth));
+
 
             var roundPosition = cellPosition * instance.tileWidth;
 
@@ -455,7 +515,7 @@ function JigsawPuzzle(config) {
             // get the tile already placed in the currenct position
             var alreadyPlacedTile = getTileAtCellPosition(cellPosition);
 
-            hasConflict = false;
+            hasConflict = alreadyPlacedTile;
 
             var topTile = getTileAtCellPosition(cellPosition + new Point(0, -1));
             var rightTile = getTileAtCellPosition(cellPosition + new Point(1, 0));
@@ -464,72 +524,101 @@ function JigsawPuzzle(config) {
 
             // check if tiles around(if exists) fit in the tab
             // if there exists the top tile
+            // position means that: start from the selected tile, walk one step in the direction
             if (topTile) {
                 hasConflict = hasConflict || !(topTile.shape.bottomTab + instance.selectedTile.shape.topTab == 0);
-                aroundTiles.push(topTile);
+                aroundTiles.push({
+                    tile: topTile,
+                    direction: 'T'
+                });
             }
 
             if (bottomTile) {
                 hasConflict = hasConflict || !(bottomTile.shape.topTab + instance.selectedTile.shape.bottomTab == 0);
-                aroundTiles.push(bottomTile);
+                aroundTiles.push({
+                    tile: bottomTile,
+                    direction: 'B'
+                });
             }
 
             if (rightTile) {
                 hasConflict = hasConflict || !(rightTile.shape.leftTab + instance.selectedTile.shape.rightTab == 0);
-                aroundTiles.push(rightTile);
+                aroundTiles.push({
+                    tile: rightTile,
+                    direction: 'R'
+                });
             }
 
             if (leftTile) {
                 hasConflict = hasConflict || !(leftTile.shape.rightTab + instance.selectedTile.shape.leftTab == 0);
-                aroundTiles.push(leftTile);
+                aroundTiles.push({
+                    tile: leftTile,
+                    direction: 'L'
+                });
             }
+
 
             // current no tile&&4 sides no conficts, a successful release
             // fitted(has tiles around it)
-
             if (!hasConflict) {
                 // if the released tile has tiles around but no conflict
-                var aroundTileIndexes = new Array();
                 if (aroundTiles.length > 0) {
                     // release and combine
-                    for (var i = 0; i < aroundTiles.length; i++) {
-                        aroundTileIndexes.push(aroundTiles[i].findex);
-                        console.log("Tiles linked : " + instance.selectedTileIndex + '-' + aroundTiles[i].findex);
+                    // for (var i = 0; i < aroundTiles.length; i++) {
+                    //     console.log("Linked : " + instance.selectedTileIndex + '-' +aroundTiles[i].position + '-' + aroundTiles[i].tile.findex);
+                    // }
+                    if (instance.selectedTile.moved) {
+                        updateLinks(instance.selectedTileIndex, aroundTiles);
                     }
-                    updateLinks(instance.selectedTileIndex, aroundTileIndexes);
                 } else if (aroundTiles.length === 0) {
                     // isolated
-                    removeLinks(instance.selectedTileIndex);// to be done
-                    // meaning that all around links are removed 
-                    console.log(instance.selectedTileIndex + '-= 0');
+                    if (instance.selectedTile.moved) {
+                        removeLinks(instance.selectedTileIndex);// to be done
+                        // meaning that all around links are removed 
+                        console.log(instance.selectedTileIndex + '-= 0');
+                    }
                 }
 
                 // every pick and release is counted as one step
                 // real time update the step counter
                 instance.steps += 1;
-                var steps = document.getElementById("steps");
-                steps.innerText = instance.steps;
+                document.getElementById("steps").innerText = instance.steps;
 
                 if (instance.selectedTile.lastScale) {
                     instance.selectedTile.scale(1 / instance.selectedTile.lastScale);
                     instance.selectedTile.lastScale = undefined;
                 }
 
-                instance.selectionGroup.remove();
-
+                instance.selectedGroup.remove();
 
                 var tile = instance.tiles[instance.selectedTileIndex];
                 tile.position = roundPosition;
                 tile.cellPosition = cellPosition;
-                instance.selectionGroup.remove();
-                instance.selectedTile = instance.selectionGroup = null;
+                instance.selectedGroup.remove();
+                instance.selectedTile = instance.selectedGroup = null;
                 project.activeLayer.addChild(tile);
+                // for (var i = 0; i < instance.selectedGroup.children.length; i++) {
+                //     var element = instance.selectedGroup.children[i];
+                //     project.activeLayer.addChild(element);
+                //     element.remove();
+                // }
 
                 // check num of errors every release
                 var errors = checkTiles();
+
                 if (errors == 0) {
                     alert('Congratulations!!!');
                 }
+            } else {
+                // if the cell already has tile in it, just switch the 2 tiles
+                alreadyPlacedTile.position = instance.selectedTile.position;
+                alreadyPlacedTile.cellPosition = instance.selectedTile.position / instance.tileWidth;
+                var tile = instance.tiles[instance.selectedTileIndex];
+                tile.position = roundPosition;
+                tile.cellPosition = cellPosition;
+                instance.selectedGroup.remove();
+                instance.selectedTile = instance.selectedGroup = null;
+                project.activeLayer.addChild(tile);
             }
         }
     }
@@ -548,9 +637,35 @@ function JigsawPuzzle(config) {
         return tile;
     }
 
+    /**
+     * Not called
+     * @param {*} tile 
+     */
+    function getAroundTiles(tile) {
+        var aroundTiles = [];
+        var directions = [
+            { 'T': new Point(0, -1) },
+            { 'R': new Point(1, 0) },
+            { 'B': new Point(0, 1) },
+            { 'L': new Point(-1, 0) }
+        ];
+        for (var d in directions) {
+            if (directions.hasOwnProperty(d)) {
+                var t = getTileAtCellPosition(tile.cellPosition + directions[d]);
+                if (t != undefined) {
+                    aroundTiles.push({
+                        d: t
+                    });
+                }
+            }
+        }
+        return aroundTiles;
+    }
+
     this.dragTile = function (delta) {
         if (instance.selectedTile) {
-            instance.selectionGroup.position += delta;
+            instance.selectedTile.moved = true;
+            instance.selectedGroup.position += delta;
             instance.selectedTile.opacity = 1;
         } else {
             var currentScroll = view.currentScroll - delta * instance.currentZoom;
@@ -559,9 +674,9 @@ function JigsawPuzzle(config) {
         }
     }
 
-    // opac effect while mouse moving on the tile
     this.mouseMove = function (point, delta) {
-        if (!instance.selectionGroup) {
+        // move all the tiles together
+        if (!instance.selectedGroup) {
             project.activeLayer.selected = false;
             if (delta.x < 8 && delta.y < 8) {
                 var tolerance = instance.tileWidth * .5;
@@ -604,6 +719,9 @@ function JigsawPuzzle(config) {
         }
     }
 
+    /**
+     * Only checks the global errors, local 
+     */
     function checkTiles() {
         var errors = 0;
         var firstTile = instance.tiles[0];
@@ -619,8 +737,87 @@ function JigsawPuzzle(config) {
                 }
             }
         }
-        //console.log(errors);
         return errors;
     }
-}
 
+
+
+
+    /**
+     * Move the recommended tiles into the hint box, and move them back when the user "focus" on another tile
+     * Called in recommendTiles() then()
+     * @param {*} selectedTile
+     * @param {*} n 
+     */
+    function showHints(selectedTile, n) {
+        var selectedTileIndex = selectedTile.findex;
+        // selectedTileIndex = 60;
+        getHints(selectedTileIndex, n).then(function (hintTiles) {
+            console.log(hintTiles);
+            var once = {
+                'T': false,
+                'R': false,
+                'B': false,
+                'L': false
+            };
+            for (var i = 0; i < hintTiles.length; i++) {
+                var tile = instance.tiles[Number(hintTiles[i].index)];
+                var direction = hintTiles[i].direction;
+                // var selectedCellPosition = selectedTile.cellPosition;
+                var selectedCellPosition = instance.tiles[selectedTileIndex].cellPosition;  // SIMU   
+                var newCellPosition = undefined;
+                switch (direction) {
+                    case 'T':
+                        if (!once['T']) {
+                            newCellPosition = selectedCellPosition + new Point(0, -1);
+                            once['T'] = true;
+                        }
+                        break;
+                    case 'R':
+                        if (!once['R']) {
+                            newCellPosition = selectedCellPosition + new Point(1, 0);
+                            once['R'] = true;
+
+                        }
+                        break;
+                    case 'B':
+                        if (!once('B')) {
+                            newCellPosition = selectedCellPosition + new Point(0, 1);
+                            once['B'] = true;
+
+                        }
+                        break;
+                    case 'L':
+                        if (!once['L']) {
+                            newCellPosition = selectedCellPosition + new Point(-1, 0);
+                            once['L'] = true;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                // only combine the empty cell around the selected one
+                if (newCellPosition != undefined && getTileAtCellPosition(newCellPosition) == undefined) {
+                    tile.animate({
+                        properties: {
+                            position: {
+                                x: (newCellPosition * instance.tileWidth).x,
+                                y: (newCellPosition * instance.tileWidth).y
+                            },
+                            strokeColor: {
+                                hue: "+100"
+                            }
+                        },
+                        settings: {
+                            duration: 1000
+                        }
+                    });
+                }
+                // tile.cellPosition = newCellPosition;
+                // tile.position = tile.cellPosition * instance.tileWidth;
+            }
+        }).catch(function () {
+            console.log('No recommendations.');
+        });
+    }
+}
