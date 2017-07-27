@@ -743,31 +743,53 @@ function JigsawPuzzle(config) {
      */
     function showHints(selectedTile, n) {
         var selectedTileIndex = selectedTile.findex;
-        selectedTileIndex = 60;
+        // selectedTileIndex = 60;
         getHints(selectedTileIndex, n).then(function (hintTiles) {
+            console.log(hintTiles);
+            var once = {
+                'T': false,
+                'R': false,
+                'B': false,
+                'L': false
+            };
             for (var i = 0; i < hintTiles.length; i++) {
                 var tile = instance.tiles[Number(hintTiles[i].index)];
                 var direction = hintTiles[i].direction;
                 // var selectedCellPosition = selectedTile.cellPosition;
                 var selectedCellPosition = instance.tiles[selectedTileIndex].cellPosition;  // SIMU   
+                var newCellPosition = undefined;
                 switch (direction) {
                     case 'T':
-                        newCellPosition = selectedCellPosition + new Point(0, -1);
+                        if (!once['T']) {
+                            newCellPosition = selectedCellPosition + new Point(0, -1);
+                            once['T'] = true;
+                        }
                         break;
                     case 'R':
-                        newCellPosition = selectedCellPosition + new Point(1, 0);
+                        if (!once['R']) {
+                            newCellPosition = selectedCellPosition + new Point(1, 0);
+                            once['R'] = true;
+
+                        }
                         break;
                     case 'B':
-                        newCellPosition = selectedCellPosition + new Point(0, 1);
+                        if (!once('B')) {
+                            newCellPosition = selectedCellPosition + new Point(0, 1);
+                            once['B'] = true;
+
+                        }
                         break;
                     case 'L':
-                        newCellPosition = selectedCellPosition + new Point(-1, 0);
+                        if (!once['L']) {
+                            newCellPosition = selectedCellPosition + new Point(-1, 0);
+                            once['L'] = true;
+                        }
                         break;
                     default:
                         break;
                 }
                 // only combine the empty cell around the selected one
-                if (getTileAtCellPosition(newCellPosition) == undefined) {
+                if (newCellPosition != undefined && getTileAtCellPosition(newCellPosition) == undefined) {
                     tile.animate({
                         properties: {
                             position: {
@@ -783,13 +805,9 @@ function JigsawPuzzle(config) {
                         }
                     });
                 }
-                //             tile.cellPosition = newCellPosition;
+                // tile.cellPosition = newCellPosition;
                 // tile.position = tile.cellPosition * instance.tileWidth;
             }
-
-            // move the recommended tiles to the hint area
-            // move them back after the user focus on another tile
-
         }).catch(function () {
             console.log('No recommendations.');
         });

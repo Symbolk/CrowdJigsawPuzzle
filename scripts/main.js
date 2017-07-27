@@ -366,6 +366,7 @@ function getHints(selectedTileIndex, n) {
                 // push the hint results into the array
                 results.push({
                     index: childSnapshot.key,
+                    score: childSnapshot.val().score,
                     direction: hintDirection
                 });
             });
