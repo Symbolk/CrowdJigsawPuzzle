@@ -513,11 +513,11 @@ function JigsawPuzzle(config) {
             var bottomTile = getTileAtCellPosition(cellPosition + new Point(0, 1));
             var leftTile = getTileAtCellPosition(cellPosition + new Point(-1, 0));
 
-            // check if tiles around(if exists) fit in the tab
+            // check if tiles around(if exists) fit in the tab( for curved tile puzzle )
             // if there exists the top tile
             // position means that: start from the selected tile, walk one step in the direction
             if (topTile) {
-                hasConflict = hasConflict || !(topTile.shape.bottomTab + instance.selectedTile.shape.topTab == 0);
+                // hasConflict = hasConflict || !(topTile.shape.bottomTab + instance.selectedTile.shape.topTab == 0);
                 aroundTiles.push({
                     tile: topTile,
                     direction: 'T'
@@ -525,7 +525,7 @@ function JigsawPuzzle(config) {
             }
 
             if (bottomTile) {
-                hasConflict = hasConflict || !(bottomTile.shape.topTab + instance.selectedTile.shape.bottomTab == 0);
+                // hasConflict = hasConflict || !(bottomTile.shape.topTab + instance.selectedTile.shape.bottomTab == 0);
                 aroundTiles.push({
                     tile: bottomTile,
                     direction: 'B'
@@ -533,7 +533,7 @@ function JigsawPuzzle(config) {
             }
 
             if (rightTile) {
-                hasConflict = hasConflict || !(rightTile.shape.leftTab + instance.selectedTile.shape.rightTab == 0);
+                // hasConflict = hasConflict || !(rightTile.shape.leftTab + instance.selectedTile.shape.rightTab == 0);
                 aroundTiles.push({
                     tile: rightTile,
                     direction: 'R'
@@ -541,7 +541,7 @@ function JigsawPuzzle(config) {
             }
 
             if (leftTile) {
-                hasConflict = hasConflict || !(leftTile.shape.rightTab + instance.selectedTile.shape.leftTab == 0);
+                // hasConflict = hasConflict || !(leftTile.shape.rightTab + instance.selectedTile.shape.leftTab == 0);
                 aroundTiles.push({
                     tile: leftTile,
                     direction: 'L'
@@ -555,9 +555,6 @@ function JigsawPuzzle(config) {
                 // if the released tile has tiles around but no conflict
                 if (aroundTiles.length > 0) {
                     // release and combine
-                    // for (var i = 0; i < aroundTiles.length; i++) {
-                    //     console.log("Linked : " + instance.selectedTileIndex + '-' +aroundTiles[i].position + '-' + aroundTiles[i].tile.findex);
-                    // }
                     if (instance.selectedTile.moved) {
                         updateLinks(instance.selectedTileIndex, aroundTiles);
                     }
@@ -601,12 +598,17 @@ function JigsawPuzzle(config) {
                     alert('Congratulations!!!');
                 }
             } else {
+                // hasConflict = alreadyPlacedTile
                 // if the cell already has tile in it, just switch the 2 tiles
+                console.log('conflict');
+                var tile = instance.tiles[instance.selectedTileIndex];
+
                 alreadyPlacedTile.position = instance.selectedTile.position;
                 alreadyPlacedTile.cellPosition = instance.selectedTile.position / instance.tileWidth;
-                var tile = instance.tiles[instance.selectedTileIndex];
-                tile.position = roundPosition;
+
                 tile.cellPosition = cellPosition;
+                tile.position = roundPosition;
+
                 instance.selectedGroup.remove();
                 instance.selectedTile = instance.selectedGroup = null;
                 project.activeLayer.addChild(tile);
@@ -744,68 +746,69 @@ function JigsawPuzzle(config) {
         var selectedTileIndex = selectedTile.findex;
         // selectedTileIndex = 60;
         getHints(selectedTileIndex, n).then(function (hintTiles) {
-            console.log(hintTiles);
             var once = {
                 'T': false,
                 'R': false,
                 'B': false,
                 'L': false
             };
-            for (var i = 0; i < hintTiles.length; i++) {
+            // from the highest score to the lowest score
+            for (var i = hintTiles.length-1; i >= 0 ; i--) {
                 var tile = instance.tiles[Number(hintTiles[i].index)];
                 var direction = hintTiles[i].direction;
-                // var selectedCellPosition = selectedTile.cellPosition;
-                var selectedCellPosition = instance.tiles[selectedTileIndex].cellPosition;  // SIMU   
+                var selectedCellPosition = instance.tiles[selectedTileIndex].cellPosition;
+                console.log(direction);
                 var newCellPosition = undefined;
-                switch (direction) {
-                    case 'T':
-                        if (!once['T']) {
-                            newCellPosition = selectedCellPosition + new Point(0, -1);
-                            once['T'] = true;
-                        }
-                        break;
-                    case 'R':
-                        if (!once['R']) {
-                            newCellPosition = selectedCellPosition + new Point(1, 0);
-                            once['R'] = true;
-
-                        }
-                        break;
-                    case 'B':
-                        if (!once('B')) {
-                            newCellPosition = selectedCellPosition + new Point(0, 1);
-                            once['B'] = true;
-
-                        }
-                        break;
-                    case 'L':
-                        if (!once['L']) {
-                            newCellPosition = selectedCellPosition + new Point(-1, 0);
-                            once['L'] = true;
-                        }
-                        break;
-                    default:
-                        break;
-                }
-                // only combine the empty cell around the selected one
-                if (newCellPosition != undefined && getTileAtCellPosition(newCellPosition) == undefined) {
-                    tile.animate({
-                        properties: {
-                            position: {
-                                x: (newCellPosition * instance.tileWidth).x,
-                                y: (newCellPosition * instance.tileWidth).y
-                            },
-                            strokeColor: {
-                                hue: "+100"
+                if (direction != undefined) {
+                    switch (direction) {
+                        case 'T':
+                            if (!once['T']) {
+                                newCellPosition = selectedCellPosition + new Point(0, -1);
+                                once['T'] = true;
                             }
-                        },
-                        settings: {
-                            duration: 1000
-                        }
-                    });
+                            break;
+                        case 'R':
+                            if (!once['R']) {
+                                newCellPosition = selectedCellPosition + new Point(1, 0);
+                                once['R'] = true;
+                            }
+                            break;
+                        case 'B':
+                            if (!once['B']) {
+                                newCellPosition = selectedCellPosition + new Point(0, 1);
+                                once['B'] = true;
+                            }
+                            break;
+                        case 'L':
+                            if (!once['L']) {
+                                newCellPosition = selectedCellPosition + new Point(-1, 0);
+                                once['L'] = true;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                    // only combine the empty cell around the selected one
+                    if (newCellPosition != undefined && getTileAtCellPosition(newCellPosition) == undefined) {
+                        tile.animate({
+                            properties: {
+                                position: {
+                                    x: (newCellPosition * instance.tileWidth).x,
+                                    y: (newCellPosition * instance.tileWidth).y
+                                },
+                            },
+                            settings: {
+                                duration: 1000
+                            }
+                        });
+                        // update the tile position after the animation
+                        setTimeout(function () {
+                            tile.cellPosition = newCellPosition;
+                            tile.position = newCellPosition * instance.tileWidth;
+                        }, 1000);
+                    }
                 }
-                // tile.cellPosition = newCellPosition;
-                // tile.position = tile.cellPosition * instance.tileWidth;
+
             }
         }).catch(function () {
             console.log('No recommendations.');

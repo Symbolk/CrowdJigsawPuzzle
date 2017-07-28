@@ -322,7 +322,8 @@ function getHints(selectedTileIndex, n) {
     let tilesRef = firebase.database().ref('links/' + selectedTileIndex);
     tilesRef.once('value', snapshot => {
         snapshot.forEach(childSnapshot => {
-            let score = childSnapshot.val().supNum / (childSnapshot.val().supNum + childSnapshot.val().oppNum);
+            // let score = childSnapshot.val().supNum / (childSnapshot.val().supNum + childSnapshot.val().oppNum);
+            let score = childSnapshot.val().supNum;
             let updateScore = {};
             updateScore['score'] = score;
             tilesRef.child(childSnapshot.key).update(updateScore);
@@ -339,7 +340,7 @@ function getHints(selectedTileIndex, n) {
         topNTilesRef.once('value').then(snapshot => {
             snapshot.forEach(childSnapshot => {
                 // use the most supported direction as the hint direction
-                let counter= [];
+                let counter= []; // key : value = direction : time
                 let supporters = childSnapshot.val().supporters;
                 for (let key in supporters) {
                     if (supporters.hasOwnProperty(key)) {
@@ -351,7 +352,7 @@ function getHints(selectedTileIndex, n) {
                         }
                     }
                 }
-                let hintDirection=undefined;
+                let hintDirection=undefined; // require one supporter at least
                 for (let key in counter) {
                     if (counter.hasOwnProperty(key)) { 
                         if(hintDirection==undefined){
