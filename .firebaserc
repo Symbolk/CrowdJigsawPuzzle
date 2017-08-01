@@ -1,8 +1,9 @@
 {
   "projects": {
-    "puzzle": "crowdjigsawpuzzle",
-    "localpuzzle": "crowdjigsawpuzzle",
-    "local": "crowdjigsawpuzzle",
-    "local2": "crowdjigsawpuzzle"
+    "puzzle": "jigsawdev-b917c",
+    "localpuzzle": "jigsawdev-b917c",
+    "local": "jigsawdev-b917c",
+    "local2": "jigsawdev-b917c",
+    "jigsaw": "jigsawdev-b917c"
   }
 }

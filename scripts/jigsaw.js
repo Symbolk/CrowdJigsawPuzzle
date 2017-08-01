@@ -128,13 +128,19 @@ $('.restart').click(function () {
 var charmsWidth = $('.charms').css('width').replace('px', '');
 $('.puzzle-image').css('margin', '-' + imgHeight / 2 + 'px 0 0 -' + imgWidth / 2 + 'px');
 
+
 function onMouseDown(event) {
     switch (event.event.button) {
         case 0: {
-            puzzle.pickTile();
+            if (Key.isDown('control')) {
+                puzzle.pickGroup();// the selected tile will be added to a group 
+            } else {
+                puzzle.pickTile();
+            }
             break;
         }
         case 2: {
+            // test hint function
             puzzle.showRecommendTiles();
             break;
         }
@@ -147,7 +153,11 @@ function onMouseUp(event) {
     // restrict to the left click
     switch (event.event.button) {
         case 0: {
-            puzzle.releaseTile();
+            if (Key.isDown('control')) {
+
+            } else {
+                puzzle.releaseTile();
+            }
             break;
         }
     }
@@ -166,11 +176,16 @@ function onMouseMove(event) {
 function onMouseDrag(event) {
     switch (event.event.button) {
         case 0: {
-            puzzle.dragTile(event.delta);
+            if (Key.isDown('control')) {
+
+            } else {
+                puzzle.dragTile(event.delta);
+            }
             break;
         }
     }
 }
+
 
 function onKeyUp(event) {
     switch (event.key) {
@@ -209,6 +224,8 @@ function JigsawPuzzle(config) {
     this.selectedTile = undefined;
     this.selectedTileIndex = undefined;
     this.selectedGroup = undefined;
+    this.selectedTilesGroup = undefined;
+
     this.shadowScale = 1.5;
     this.tiles = createTiles(this.tilesPerRow, this.tilesPerColumn);
 
@@ -461,26 +478,22 @@ function JigsawPuzzle(config) {
             instance.selectedTile.cellPosition = undefined;
             instance.selectedGroup = new Group(instance.selectedTile);
 
-            var directions = [
-                new Point(0, -1),
-                new Point(1, 0),
-                new Point(0, 1),
-                new Point(-1, 0)
-            ];
-            for (var i = 0; i < 4; i++) {
-                var t = getTileAtCellPosition(cellPosition + directions[i]);
-                if (t != undefined) {
-                    t.cellPosition = undefined;
-                    // instance.selectedGroup.addChild(t);
-                }
-            }
-
             var pos = new Point(instance.selectedTile.position.x, instance.selectedTile.position.y);
             // instance.selectedTile.position = new Point(0, 0);
             // the index of the tile
             console.log('@ ' + instance.selectedTileIndex);
-            // console.log(instance.selectedTile.findex);
             instance.selectedGroup.position = pos;
+        }
+    }
+
+    this.pickGroup = function () {
+        if (instance.selectedTile) {
+            if (instance.selectedTilesGroup == undefined) {
+                instance.selectedTilesGroup = new Group(instance.selectedTile);
+            } else {
+                instance.selectedTilesGroup.addChild(instance.selectedTile);                
+            }
+            console.log("G"+instance.selectedTile.findex);
         }
     }
 
@@ -496,7 +509,6 @@ function JigsawPuzzle(config) {
             var cellPosition = new Point(
                 Math.round(instance.selectedGroup.position.x / instance.tileWidth),
                 Math.round(instance.selectedGroup.position.y / instance.tileWidth));
-
 
             var roundPosition = cellPosition * instance.tileWidth;
 
@@ -735,7 +747,6 @@ function JigsawPuzzle(config) {
 
 
 
-
     /**
      * Move the recommended tiles into the hint box, and move them back when the user "focus" on another tile
      * Called in recommendTiles() then()
@@ -744,7 +755,6 @@ function JigsawPuzzle(config) {
      */
     function showHints(selectedTile, n) {
         var selectedTileIndex = selectedTile.findex;
-        // selectedTileIndex = 60;
         getHints(selectedTileIndex, n).then(function (hintTiles) {
             var once = {
                 'T': false,
@@ -753,41 +763,29 @@ function JigsawPuzzle(config) {
                 'L': false
             };
             // from the highest score to the lowest score
-            for (var i = hintTiles.length-1; i >= 0 ; i--) {
+            for (var i = hintTiles.length - 1; i >= 0; i--) {
                 var tile = instance.tiles[Number(hintTiles[i].index)];
                 var direction = hintTiles[i].direction;
                 var selectedCellPosition = instance.tiles[selectedTileIndex].cellPosition;
-                console.log(direction);
                 var newCellPosition = undefined;
-                if (direction != undefined) {
+                if (direction != undefined && !once[direction]) {
                     switch (direction) {
                         case 'T':
-                            if (!once['T']) {
-                                newCellPosition = selectedCellPosition + new Point(0, -1);
-                                once['T'] = true;
-                            }
+                            newCellPosition = selectedCellPosition + new Point(0, -1);
                             break;
                         case 'R':
-                            if (!once['R']) {
-                                newCellPosition = selectedCellPosition + new Point(1, 0);
-                                once['R'] = true;
-                            }
+                            newCellPosition = selectedCellPosition + new Point(1, 0);
                             break;
                         case 'B':
-                            if (!once['B']) {
-                                newCellPosition = selectedCellPosition + new Point(0, 1);
-                                once['B'] = true;
-                            }
+                            newCellPosition = selectedCellPosition + new Point(0, 1);
                             break;
                         case 'L':
-                            if (!once['L']) {
-                                newCellPosition = selectedCellPosition + new Point(-1, 0);
-                                once['L'] = true;
-                            }
+                            newCellPosition = selectedCellPosition + new Point(-1, 0);
                             break;
                         default:
                             break;
                     }
+                    once[direction] = true;
                     // only combine the empty cell around the selected one
                     if (newCellPosition != undefined && getTileAtCellPosition(newCellPosition) == undefined) {
                         tile.animate({
@@ -803,12 +801,14 @@ function JigsawPuzzle(config) {
                         });
                         // update the tile position after the animation
                         setTimeout(function () {
-                            tile.cellPosition = newCellPosition;
-                            tile.position = newCellPosition * instance.tileWidth;
+                            if (newCellPosition != undefined) {
+                                tile.cellPosition = newCellPosition;
+                                tile.position = newCellPosition * instance.tileWidth;
+
+                            }
                         }, 1000);
                     }
                 }
-
             }
         }).catch(function () {
             console.log('No recommendations.');
