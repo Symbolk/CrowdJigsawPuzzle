@@ -135,6 +135,11 @@ h3 {
     background-color:#f0f3f9;
 }
 
+.mode{
+    position: absolute;
+    right: 20px;
+    top: 40px;
+}
 
 
 .mdl-switch{
