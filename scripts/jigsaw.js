@@ -31,7 +31,7 @@ var imgHeight = $('.puzzle-image').css('height').replace('px', '');
 var tileWidth = 64;
 
 var config = ({
-    zoomScaleOnDrag: 1.125,
+    zoomScaleOnDrag: 1.25,
     imgName: 'puzzle-image',
     tileShape: 'straight', // curved or straight
     tileWidth: tileWidth,
@@ -42,6 +42,12 @@ var config = ({
     shadowWidth: 120,
 });
 
+var directions = [
+    new Point(0, -1),
+    new Point(1, 0),
+    new Point(0, 1),
+    new Point(-1, 0)
+];
 
 /**
  * Start building the puzzle
@@ -128,40 +134,32 @@ $('.restart').click(function () {
 var charmsWidth = $('.charms').css('width').replace('px', '');
 $('.puzzle-image').css('margin', '-' + imgHeight / 2 + 'px 0 0 -' + imgWidth / 2 + 'px');
 
-
+var downTime;
 function onMouseDown(event) {
     switch (event.event.button) {
         case 0: {
-            if (GroupMode.checked) {
+            downTime = event.event.timeStamp;
+            if (Key.isDown('control')) {
                 puzzle.pickGroup();
             } else {
-                // empty the last picked group
-                instance.selectedIndexes=[];
-                instance.selectedTilesGroup=null;
                 puzzle.pickTile();
             }
             break;
         }
         case 2: {
             // test hint function
-            if(!GroupMode.checked){
-                puzzle.showRecommendTiles();
-            }
+            puzzle.showRecommendTiles();
             break;
         }
     }
 }
 
 
-
 function onMouseUp(event) {
     // restrict to the left click
     switch (event.event.button) {
         case 0: {
-            if (!GroupMode.checked) {
-                // console.log('Release');
-                puzzle.releaseTile();
-            }
+            puzzle.releaseTile();
             break;
         }
     }
@@ -181,11 +179,12 @@ function onMouseMove(event) {
 function onMouseDrag(event) {
     switch (event.event.button) {
         case 0: {
-            if (GroupMode.checked) {
-                puzzle.dragGroup(event.delta);
-            } else {
-                puzzle.dragTile(event.delta);
-            }
+            var dragTime = event.event.timeStamp;
+            // if (dragTime - downTime > 500) {
+            // puzzle.dragGroup(event.delta);
+            // } else {
+            puzzle.dragTile(event.delta);
+            // }
             break;
         }
     }
@@ -203,10 +202,9 @@ function onKeyUp(event) {
     }
 }
 
-var GroupMode = document.querySelector('#group-mode');
 
 function JigsawPuzzle(config) {
-    instance = this; // the current object(which calls the function)
+    var instance = this; // the current object(which calls the function)
     this.tileShape = config.tileShape;
 
     this.currentZoom = 1;
@@ -230,8 +228,6 @@ function JigsawPuzzle(config) {
     this.selectedTile = undefined;
     this.selectedTileIndex = undefined;
     this.selectedGroup = undefined;
-    this.selectedIndexes = [];
-    this.selectedTilesGroup = undefined;
 
     this.shadowScale = 1.5;
     this.tiles = createTiles(this.tilesPerRow, this.tilesPerColumn);
@@ -268,7 +264,7 @@ function JigsawPuzzle(config) {
                 // each tile is a group of
                 var tile = new Group(mask, border, img, border);
                 tile.clipped = true;
-                tile.opacity = 1;
+                tile.opacity = .5;
 
                 tile.shape = shape;
                 tile.imagePosition = new Point(x, y);
@@ -300,8 +296,10 @@ function JigsawPuzzle(config) {
                     Math.round(position.x / instance.tileWidth) + 1,//returns int closest to arg
                     Math.round(position.y / instance.tileWidth) + 1);
 
-                tile.position = cellPosition * instance.tileWidth; // round position
-                tile.cellPosition = cellPosition; // cell position
+                tile.position = cellPosition * instance.tileWidth; // round position(actual (x,y) in the canvas)
+                tile.cellPosition = cellPosition; // cell position(in which grid the tile is)
+                tile.moved = false; // if one tile just clicked or actually moved(if moved, opacity=1)
+                tile.grouped = false; // whether the tile has been grouped(in pickGroup)
             }
         }
 
@@ -467,38 +465,37 @@ function JigsawPuzzle(config) {
         return targetRaster;
     }
 
+
     this.pickGroup = function () {
         if (instance.selectedTile) {
-            if (!instance.selectedTile.lastScale) {
-                instance.selectedTile.lastScale = instance.zoomScaleOnDrag;
-                instance.selectedTile.scale(instance.selectedTile.lastScale);
-            } else {
-                if (instance.selectedTile.lastScale > 1) {
-                    instance.selectedTile.scale(1 / instance.selectedTile.lastScale);
-                    instance.selectedTile.lastScale = undefined;
-                    return;
-                }
-            }
+            // whether the tile is moved or just selected
+            instance.selectedTile.moved = false;
+            instance.selectedTile.grouped=true;
+            // get all linked tiles and group them together
+            var cellPosition = instance.selectedTile.cellPosition;
 
             console.log('Group');
-            console.log('@ ' + instance.selectedTileIndex);
+            instance.selectedGroup = new Group();
+            instance.selectedGroup.addChild(instance.selectedTile);
 
-            var tile = instance.tiles[instance.selectedTileIndex];// the selected tile
+            // group the linked tiles together
+            getLinkedGroup(instance.selectedTile);
 
-            // add the selected tiles' indexes to the array as a mark
-            instance.selectedIndexes.push(instance.selectedTileIndex);
+            instance.selectedTile.cellPosition = undefined;
 
-            // highlight the grouped tiles in some way
-            tile._style.strokeColor = "green";
-            tile.opacity = .5;
+            var pos = new Point(instance.selectedTile.position.x, instance.selectedTile.position.y);
+            // the index of the selected group
+            console.log('G ' + instance.selectedTileIndex);
 
-            // instance.selectedTile.cellPosition = undefined;
-            // instance.selectedTile.position = new Point(0, 0);
-            // console.log(instance.selectedTilesGroup.children);
+            instance.selectedGroup.position = pos;
+
             // for (var i = 0; i < instance.selectedGroup.children.length; i++) {
-            //     console.log(instance.selectedGroup.children[i]);
-            //         instance.selectedTile.cellPosition = undefined;
-
+            //     var childTile = instance.selectedGroup.children[i];
+            //     // console.log('Before ' + childTile.findex + ' ' + childTile.cellPosition);
+            //     // childTile.cellPosition=undefined;
+            //     // childTile.position=pos;
+            //     // console.log(childTile);
+            // }
         }
     }
 
@@ -507,7 +504,6 @@ function JigsawPuzzle(config) {
 
             // whether the tile is moved or just selected
             instance.selectedTile.moved = false;
-            instance.selectedTile._style.strokeColor = "red";
             // get all linked tiles and group them together
             var cellPosition = instance.selectedTile.cellPosition;
 
@@ -518,6 +514,7 @@ function JigsawPuzzle(config) {
             var pos = new Point(instance.selectedTile.position.x, instance.selectedTile.position.y);
             // the index of the selected tile
             console.log('@ ' + instance.selectedTileIndex);
+
             instance.selectedGroup.position = pos;
         }
     }
@@ -528,9 +525,6 @@ function JigsawPuzzle(config) {
         }
     }
 
-    this.releaseGroup=function(){
-        
-    }
 
     this.releaseTile = function () {
         if (instance.selectedTile) {
@@ -595,8 +589,8 @@ function JigsawPuzzle(config) {
             if (!hasConflict) {
                 // if the released tile has tiles around but no conflict
                 if (aroundTiles.length > 0) {
-                    // release and combine
                     if (instance.selectedTile.moved) {
+                        // release and update the database
                         updateLinks(instance.selectedTileIndex, aroundTiles);
                     }
                 } else if (aroundTiles.length === 0) {
@@ -613,10 +607,6 @@ function JigsawPuzzle(config) {
                 instance.steps += 1;
                 document.getElementById("steps").innerText = instance.steps;
 
-                if (instance.selectedTile.lastScale) {
-                    instance.selectedTile.scale(1 / instance.selectedTile.lastScale);
-                    instance.selectedTile.lastScale = undefined;
-                }
 
                 instance.selectedGroup.remove();
 
@@ -625,6 +615,20 @@ function JigsawPuzzle(config) {
                 tile.cellPosition = cellPosition;
                 instance.selectedGroup.remove();
                 project.activeLayer.addChild(tile);
+
+                // TODO : set new position for every tile in the group
+                for (var i = 0; i < instance.selectedGroup.children.length; i++) {
+                    var childTile = instance.selectedGroup.children[i];
+                    var childCP = new Point(
+                        Math.round(childTile.position.x / instance.tileWidth),
+                        Math.round(childTile.position.y / instance.tileWidth));
+                    var childP = childCP * instance.tileWidth;
+                    childTile.position = childP;
+                    childTile.cellPosition = childCP;
+                    // console.log('After ' + childTile.findex + ' ' + childTile.cellPosition);
+                    // project.activeLayer.addChild(childTile); // FUCK this function
+                    instance.selectedGroup.remove();
+                }
 
                 instance.selectedTile = instance.selectedGroup = null;
                 // check num of errors every release
@@ -636,7 +640,7 @@ function JigsawPuzzle(config) {
             } else {
                 // hasConflict = alreadyPlacedTile
                 // if the cell already has tile in it, just switch the 2 tiles
-                console.log('conflict');
+                console.log('Conflict');
                 var tile = instance.tiles[instance.selectedTileIndex];
 
                 alreadyPlacedTile.position = instance.selectedTile.position;
@@ -668,52 +672,28 @@ function JigsawPuzzle(config) {
     }
 
     /**
-     * Not called
+     * DFS to get all linked tiles of the selected tile
      * @param {*} tile 
      */
-    function getAroundTiles(tile) {
-        var aroundTiles = [];
-        var directions = [
-            { 'T': new Point(0, -1) },
-            { 'R': new Point(1, 0) },
-            { 'B': new Point(0, 1) },
-            { 'L': new Point(-1, 0) }
-        ];
-        for (var d in directions) {
-            if (directions.hasOwnProperty(d)) {
-                var t = getTileAtCellPosition(tile.cellPosition + directions[d]);
-                if (t != undefined) {
-                    aroundTiles.push({
-                        d: t
-                    });
-                }
+    function getLinkedGroup(tile) {
+        for (var i = 0; i < 4; i++) {
+            var nextCellPosition = tile.cellPosition + directions[i];
+            var nextTile = getTileAtCellPosition(nextCellPosition);
+            if (nextTile != undefined && !nextTile.grouped) {
+                nextTile.grouped = true;
+                instance.selectedGroup.addChild(nextTile);
+                // getLinkedGroup(nextTile);
             }
         }
-        return aroundTiles;
+        return;
     }
 
-    this.dragGroup = function (delta) {
-        if (instance.selectedTile) {
-            // add the marked tiles to the selected tile group
-            if (instance.selectedTilesGroup == undefined || instance.selectedTilesGroup == null) {
-                instance.selectedTilesGroup = new Group();
-            } else {
-                for (var i = 0; i < instance.selectedIndexes.length; i++) {
-                    instance.selectedTilesGroup.addChild(instance.tiles[instance.selectedIndexes[i]]);
-                }
-            }
 
-            console.log('Grouped Num : ' + instance.selectedTilesGroup.children.length);
-            // move the grouped tiles as the mouse drag
-            for (var i = 0; i < instance.selectedTilesGroup.children.length; i++) {
-                var tile = instance.selectedTilesGroup.children[i];
-                tile.position += delta;
-                if (tile.lastScale > 1) {
-                    tile.scale(1 / tile.lastScale);
-                    tile.lastScale = undefined;
-                    return;
-                }
-            }
+    this.dragTile = function (delta) {
+        if (instance.selectedTile) {
+            instance.selectedTile.moved = true;
+            instance.selectedGroup.position += delta;
+            instance.selectedTile.opacity = 1;
         } else {
             var currentScroll = view.currentScroll - delta * instance.currentZoom;
             view.scrollBy(currentScroll);
@@ -721,10 +701,16 @@ function JigsawPuzzle(config) {
         }
     }
 
-    this.dragTile = function (delta) {
+    this.dragGroup = function (delta) {
         if (instance.selectedTile) {
             instance.selectedTile.moved = true;
             instance.selectedGroup.position += delta;
+            for (var i = 0; i < instance.selectedGroup.children.length; i++) {
+                var childTile = instance.selectedGroup.children[i];
+                childTile.moved = true;
+                childTile.opacity = 1;
+                childTile.position += delta;
+            }
             instance.selectedTile.opacity = 1;
         } else {
             var currentScroll = view.currentScroll - delta * instance.currentZoom;
@@ -739,7 +725,7 @@ function JigsawPuzzle(config) {
             project.activeLayer.selected = false;
             if (delta.x < 8 && delta.y < 8) {
                 var tolerance = instance.tileWidth * .5;
-                var hit = false;
+                var hit = false; // onMouseEnter
                 for (var index = 0; index < instance.tiles.length; index++) {
                     var tile = instance.tiles[index];
                     // [row, col] coordinate of the tile
@@ -756,11 +742,13 @@ function JigsawPuzzle(config) {
                     if (hit) {
                         instance.selectedTile = tile;
                         instance.selectedTileIndex = index;
-                        tile.opacity = .5;
+                        tile.opacity = 1;
                         project.activeLayer.addChild(tile);
                         return;
                     } else {
-                        tile.opacity = 1;
+                        if (!tile.moved) {
+                            tile.opacity = .5;
+                        }
                     }
                 }
                 if (!hit)
@@ -780,7 +768,7 @@ function JigsawPuzzle(config) {
     }
 
     /**
-     * Only checks the global errors, local 
+     * Only checks the global errors 
      */
     function checkTiles() {
         var errors = 0;
@@ -797,6 +785,7 @@ function JigsawPuzzle(config) {
                 }
             }
         }
+        uploadScore();
         return errors;
     }
 

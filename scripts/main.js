@@ -78,12 +78,20 @@ Array.prototype.removeByValue = function (val) {
  */
 function writeUserData(userId, name, email, imageUrl) {
     firebase.database().ref('users/' + userId).set({
+    // firebase.database().ref('users/' + name).set({        
         username: name,
+        // userid, userId,
         email: email,
         photoURL: imageUrl
     });
 }
 
+/**
+ * Upload single user's score(steps, time) to the database once he/she figures out
+ */
+function uploadScore(){
+    
+}
 
 /**
  *  Triggered by every release and combine
