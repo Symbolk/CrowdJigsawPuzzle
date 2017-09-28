@@ -45,6 +45,7 @@ Requirements :
 3, Click "Start Game" to play with a puzzle.
 
 ![Puzzle](https://github.com/Symbolk/CrowdJigsawPuzzle/blob/master/screenshots/puzzle.jpg)
+![Puzzle2](https://github.com/Symbolk/CrowdJigsawPuzzle/blob/master/screenshots/puzzle2.jpg)
 
 
 ## Run it Locally!
